@@ -5,10 +5,7 @@ name = "pypi"
 
 [packages]
 scapy = "*"
-flask = "*"
-requests = "*"
-flask-socketio = "*"
-gevent = "*"
+aiohttp = "*"
 
 [dev-packages]
 
