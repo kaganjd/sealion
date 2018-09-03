@@ -1,0 +1,21 @@
+{
+  "name": "p5.packets-client",
+  "version": "0.0.1",
+  "description": "play with network packets in p5.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "precommit": "pretty-quick --staged"
+  },
+  "author": "jen kagan",
+  "license": "MIT",
+  "devDependencies": {
+    "husky": "^0.14.3",
+    "prettier": "1.14.2",
+    "pretty-quick": "^1.6.0",
+    "webpack": "^4.17.1",
+    "webpack-cli": "^3.1.0"
+  },
+  "dependencies": {}
+}
