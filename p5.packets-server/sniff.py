@@ -34,59 +34,19 @@ def get_sniffer_config(args=''):
         'store': 0
     }
 
-    try:
-        count = args.get('count')
-        if count is None:
-            count = config['count']
-        else:
-            config.update(count=count)
-    except AttributeError:
-        print('hork')
+    def args_to_config(key):
+        try:
+            key = args.get(str(key))
+            if key is None:
+                key = config[str(key)]
+            else:
+                config.update(key=key)
+        except AttributeError:
+            print('No key "%s" in the args dict that was passed to get_sniffer_config' % key)
+            print('Using the default value')
 
-    try:
-        filter = args.get('filter')
-        if filter is None:
-            filter = config['filter']
-        else:
-            config.update(filter=filter)
-    except AttributeError:
-        print('hork')
-
-    try:
-        iface = args.get('iface')
-        if iface is None:
-            iface = config['iface']
-        else:
-            config.update(iface=iface)
-    except AttributeError:
-        print('hork')
-
-    try:
-        lfilter = args.get('lfilter')
-        if lfilter is None:
-            lfilter = config['lfilter']
-        else:
-            config.update(lfilter=lfilter)
-    except AttributeError:
-        print('hork')
-
-    try:
-        prn = args.get('prn')
-        if prn is None:
-            prn = config['prn']
-        else:
-            config.update(prn=prn)
-    except AttributeError:
-        print('hork')
-
-    try:
-        store = args.get('store')
-        if store is None:
-            store = config['store']
-        else:
-            config.update(store=store)
-    except AttributeError:
-        print('hork')
+    for key in config:
+        args_to_config(key)
 
     return config
 
