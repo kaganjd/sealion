@@ -1,5 +1,4 @@
 from scapy.all import *
-import argparse
 import sys
 
 def get_interface():
