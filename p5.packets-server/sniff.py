@@ -1,51 +1,94 @@
 from scapy.all import *
-from scapy.arch.unix import read_routes
 import argparse
+import sys
 
-a = read_routes() # only for unix
-interface_info = {
-    'gw': a[0][2],
-    'netif': a[0][3],
-    'ifaddr': a[0][4],
-}
-print('interface_info: ', interface_info)
+def get_interface():
+    # https://stackoverflow.com/questions/446209/possible-values-from-sys-platform
+    if sys.platform == 'darwin':
+        from scapy.arch.unix import read_routes
+        a = read_routes()
+        interface_info = {
+            'gw': a[0][2],
+            'netif': a[0][3],
+            'ifaddr': a[0][4],
+        }
+        return interface_info
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--count", help="The number of packets to sniff (integer). 0 (default) is indefinite count.")
-parser.add_argument("--filter", help="BPF filter to apply")
-parser.add_argument("--iface", help="The network interface to sniff on.")
-parser.add_argument("--prn", help="Function to apply to each packet.")
-parser.add_argument("--lfilter", help="Function to apply to each packet. Should be a filter check.")
-args = parser.parse_args()
-if args.count:
+    elif sys.platform == 'linux2':
+        from scapy.arch.linux import get_if_list
+        interface_info = get_if_list()
+        return interface_info
+
+    elif sys.platform == 'win32':
+        from scapy.arch.windows.__init__ import show_interfaces
+        interface_info = show_interfaces()
+        return interface_info
+
+def get_sniffer_config(args=''):
+    config = {
+        'count': 5,
+        'filter': '',
+        'iface': conf.iface,
+        'lfilter': '',
+        'prn': lambda x: x.summary(),
+        'store': 0
+    }
+
     try:
-        count = int(args.count)
-        print("Sniffing %d packets." % count)
-    except: 
-        print("Count is not a valid integer, using default of 5. Ctrl + C to stop sending packets.")
-        count = 5
-else:
-    count = 5
-    print("Using default packet count of 5. Ctrl + C to stop sending packets.")
+        count = args.get('count')
+        if count is None:
+            count = config['count']
+        else:
+            config.update(count=count)
+    except AttributeError:
+        print('hork')
 
-if args.filter:
-    filter = args.filter
-else: 
-    filter = ""
+    try:
+        filter = args.get('filter')
+        if filter is None:
+            filter = config['filter']
+        else:
+            config.update(filter=filter)
+    except AttributeError:
+        print('hork')
 
-if args.iface:
-    iface = args.iface
-else: 
-    iface = conf.iface
+    try:
+        iface = args.get('iface')
+        if iface is None:
+            iface = config['iface']
+        else:
+            config.update(iface=iface)
+    except AttributeError:
+        print('hork')
 
-if args.prn:
-    prn = args.prn
-else: 
-    prn = lambda x: x.summary()
+    try:
+        lfilter = args.get('lfilter')
+        if lfilter is None:
+            lfilter = config['lfilter']
+        else:
+            config.update(lfilter=lfilter)
+    except AttributeError:
+        print('hork')
 
-if args.lfilter:
-    lfilter = args.lfilter
-else:
-    lfilter  = ""
+    try:
+        prn = args.get('prn')
+        if prn is None:
+            prn = config['prn']
+        else:
+            config.update(prn=prn)
+    except AttributeError:
+        print('hork')
 
-sniff(filter=filter, prn=prn, count=count, lfilter=lfilter, iface=iface, store=0)
+    try:
+        store = args.get('store')
+        if store is None:
+            store = config['store']
+        else:
+            config.update(store=store)
+    except AttributeError:
+        print('hork')
+
+    return config
+
+get_interface()
+sniff(**get_sniffer_config())
