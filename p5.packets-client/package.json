@@ -6,16 +6,20 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
+    "prebuild": "rm dist/main.js",
     "precommit": "pretty-quick --staged"
   },
   "author": "jen kagan",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.2",
+    "babel-preset-env": "^1.7.0",
     "husky": "^0.14.3",
     "prettier": "1.14.2",
     "pretty-quick": "^1.6.0",
     "webpack": "^4.17.1",
     "webpack-cli": "^3.1.0"
-  },
-  "dependencies": {}
+  }
 }
