@@ -1,11 +1,18 @@
-const url = "ws://127.0.0.1:8080/payload";
-const socket = new WebSocket(url);
+class Network {
+  constructor(hostname, port) {
+    this.hostname = hostname;
+    this.port = port;
+    this.socket = new WebSocket(`ws://${this.hostname}:${this.port}/payload`);
+  }
 
-let element = document.createElement("div");
+  open() {
+    this.socket.onopen = () => this.socket.send("hey");
+  }
 
-socket.onopen = () => socket.send("hey");
+  monitor() {
+    this.socket.onmessage = event => console.log(`message: ${event.data}`);
+  }
+}
 
-socket.onmessage = function(event) {
-  element.innerHTML = `message: ${event.data}`;
-  document.body.appendChild(element);
-};
+console.log("main.js loaded!");
+module.exports = Network;
