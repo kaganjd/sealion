@@ -4,14 +4,23 @@ module.exports = {
   entry: "./src/index.js",
   output: {
     filename: "main.js",
-    path: path.resolve(__dirname, "dist")
+    path: path.resolve(__dirname, "dist"),
+    library: "Sniffer",
+    libraryTarget: "umd"
   },
+  devServer: {
+    contentBase: "./dist"
+  },
+  mode: "development",
   module: {
     rules: [
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: "babel-loader"
+        loader: "babel-loader",
+        options: {
+          presets: ["@babel/preset-env"]
+        }
       }
     ]
   }

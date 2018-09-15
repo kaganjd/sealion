@@ -6,7 +6,6 @@ async def index(request):
     return web.Response(text='hello')
 
 async def websocket_handler(request):
-
     p = IP(dst="github.com")/TCP()
     r = sr1(p)
     resp = r.summary()
@@ -19,6 +18,7 @@ async def websocket_handler(request):
             if msg.data == 'close':
                 await ws.close()
             else:
+                print(msg.data)
                 await ws.send_str(resp + '/answer')
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' %
