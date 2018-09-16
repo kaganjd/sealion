@@ -49,5 +49,5 @@ def get_sniffer_config(args=''):
 
     return config
 
-get_interface()
-sniff(**get_sniffer_config())
+# get_interface()
+# sniff(**get_sniffer_config())

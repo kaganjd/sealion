@@ -5,10 +5,9 @@ const port = 8080;
 function setup() {
   createCanvas(400, 400);
   background(100, 255, 255);
+  // 'Sniffer' name comes from Webpack output.library
   packet = new Sniffer(hostname, port);
-  console.log(packet);
-  packet.open();
-  packet.monitor();
+  packet.getInterface();
 }
 
 function draw() {}
