@@ -1,5 +1,4 @@
-from views import index, websocket_handler
+from views import interface_socket
 
 def setup_routes(app):
-    app.router.add_get('/', index)
-    app.router.add_get('/payload', websocket_handler)
+    app.router.add_get('/interfaces', interface_socket)

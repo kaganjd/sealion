@@ -2,15 +2,18 @@ class Network {
   constructor(hostname, port) {
     this.hostname = hostname;
     this.port = port;
-    this.socket = new WebSocket(`ws://${this.hostname}:${this.port}/payload`);
   }
 
-  open() {
-    this.socket.onopen = () => this.socket.send("hey");
-  }
+  getInterface() {
+    const url = "http://localhost:8080/interfaces";
+    let request = new XMLHttpRequest();
+    request.open("GET", url);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.send();
 
-  monitor() {
-    this.socket.onmessage = event => console.log(`message: ${event.data}`);
+    request.onload = function(event) {
+      console.log(request.response);
+    };
   }
 }
 
