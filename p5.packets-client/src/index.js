@@ -4,8 +4,14 @@ class Network {
     this.port = port;
   }
 
+  runSniffer() {
+    this.socket = new WebSocket(`ws://${hostname}:${port}/sniffer`);
+    this.socket.onopen = () => this.socket.send("message from client");
+    this.socket.onmessage = event => console.log(`message: ${event.data}`);
+  }
+
   getInterface() {
-    const url = "http://localhost:8080/interfaces";
+    const url = `http://${hostname}:${port}/interface`;
     let request = new XMLHttpRequest();
     request.open("GET", url);
     request.setRequestHeader("Content-Type", "application/json");

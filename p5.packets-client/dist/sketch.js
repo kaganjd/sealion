@@ -8,6 +8,7 @@ function setup() {
   // 'Sniffer' name comes from Webpack output.library
   packet = new Sniffer(hostname, port);
   packet.getInterface();
+  packet.runSniffer();
 }
 
 function draw() {}
