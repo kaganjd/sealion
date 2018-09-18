@@ -9,6 +9,7 @@ function setup() {
   packet = new Sniffer(hostname, port);
   packet.getInterface();
   packet.runSniffer();
+  packet.configSniffer(2, "", "en0");
 }
 
 function draw() {}
