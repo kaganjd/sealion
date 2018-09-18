@@ -2,10 +2,19 @@ class Network {
   constructor(hostname, port) {
     this.hostname = hostname;
     this.port = port;
+    this.socket = new WebSocket(`ws://${hostname}:${port}/sniffer`);
+  }
+
+  configSniffer(count, filter, iface) {
+    config = {
+      count: count,
+      filter: filter,
+      iface: iface
+    };
+    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
   }
 
   runSniffer() {
-    this.socket = new WebSocket(`ws://${hostname}:${port}/sniffer`);
     this.socket.onopen = () => this.socket.send("message from client");
     this.socket.onmessage = event => console.log(`message: ${event.data}`);
   }
