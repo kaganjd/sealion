@@ -3,8 +3,9 @@ import json
 from aiohttp import web
 from scapy.all import *
 from sniff import get_interface
+import threading
 
-pkt_array = []
+q = Queue()
 
 async def serve_interface(request):
     return web.json_response(get_interface())
@@ -19,10 +20,10 @@ async def sniffer_socket(request):
                 await ws.close()
             else:
                 print('msg.data: %s' % msg.data)
-                s = get_sniffer_config(passed_config=msg.data)
-                sniff(**s)
-                for pkt in pkt_array:
-                    await ws.send_str(str(pkt))
+                config = get_sniffer_config(passed_config=msg.data)
+                threading.Thread(target=read_q).start()
+                threading.Thread(target=sniff_process(config=config)).start()
+                await ws.send_str('hello')
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' %
                   ws.exception())
@@ -31,17 +32,12 @@ async def sniffer_socket(request):
 
 def get_sniffer_config(**kwargs):
     default_config = {
-        'count': 5,
-        'filter': '',
-        'iface': conf.iface,
-        'lfilter': '',
-        'prn': lambda x: send_packet(x),
-        'store': 0
+        "count": 5,
+        "filter": "",
+        "iface": conf.iface,
+        "lfilter": "",
+        "store": 0
     }
-    
-    def send_packet(raw):
-        pkt_array.append(raw)
-        return
 
     def update_config(key):
         passed_config = json.loads(kwargs['passed_config'])
@@ -58,3 +54,19 @@ def get_sniffer_config(**kwargs):
         update_config(key)
 
     return default_config
+
+def sniff_process(**kwargs):
+    k = kwargs['config']
+    def summarize(x):
+        logger = 1
+        pkt_summary = x.summary()
+        print('{}--{}'.format(logger, pkt_summary))
+        q.put('{}--{}'.format(logger, pkt_summary))
+    sniff(**k, prn=lambda x: summarize(x))
+
+def read_q():
+    while True:
+        logger = 2
+        pkt_summary = q.get()
+        if pkt_summary:
+            print('{}--{}'.format(logger, pkt_summary))
