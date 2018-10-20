@@ -4,6 +4,7 @@ from aiohttp import web
 from scapy.all import *
 from sniff import get_interface
 import threading
+import asyncio
 
 q = Queue()
 
@@ -21,9 +22,10 @@ async def sniffer_socket(request):
             else:
                 print('msg.data: %s' % msg.data)
                 config = get_sniffer_config(passed_config=msg.data)
-                threading.Thread(target=read_q).start()
+                new_loop = asyncio.new_event_loop()
+                asyncio.run_coroutine_threadsafe(read_q(ws), new_loop)
+                threading.Thread(target=start_loop, args=(new_loop,)).start()
                 threading.Thread(target=sniff_process(config=config)).start()
-                await ws.send_str('hello')
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' %
                   ws.exception())
@@ -55,6 +57,11 @@ def get_sniffer_config(**kwargs):
 
     return default_config
 
+# from https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
+def start_loop(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
 def sniff_process(**kwargs):
     k = kwargs['config']
     def summarize(x):
@@ -64,9 +71,10 @@ def sniff_process(**kwargs):
         q.put('{}--{}'.format(logger, pkt_summary))
     sniff(**k, prn=lambda x: summarize(x))
 
-def read_q():
+async def read_q(ws):
     while True:
         logger = 2
         pkt_summary = q.get()
         if pkt_summary:
             print('{}--{}'.format(logger, pkt_summary))
+            await ws.send_str(pkt_summary)
