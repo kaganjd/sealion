@@ -6,7 +6,7 @@ from sniff import get_interface
 import threading
 import asyncio
 
-q = Queue()
+q = Queue(maxsize=50)
 
 async def serve_interface(request):
     return web.json_response(get_interface())
@@ -67,8 +67,9 @@ def sniff_process(**kwargs):
     def summarize(x):
         logger = 1
         pkt_summary = x.summary()
-        print('{}--{}'.format(logger, pkt_summary))
-        q.put('{}--{}'.format(logger, pkt_summary))
+        to_q = '{}--{}'.format(logger, pkt_summary)
+        # print(to_q)
+        q.put(to_q)
     sniff(**k, prn=lambda x: summarize(x))
 
 async def read_q(ws):
@@ -76,5 +77,6 @@ async def read_q(ws):
         logger = 2
         pkt_summary = q.get()
         if pkt_summary:
-            print('{}--{}'.format(logger, pkt_summary))
-            await ws.send_str(pkt_summary)
+            from_q = '{}--{}'.format(logger, pkt_summary)
+            # print(from_q)
+            await ws.send_str(from_q)
