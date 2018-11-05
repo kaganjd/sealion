@@ -3,4 +3,4 @@ __pycache__/
 venv/
 node_modules/
 */dist/main.js
-*/sample-project
+*/sample-project/p5.min.js
