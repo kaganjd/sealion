@@ -17,10 +17,11 @@ async def sniffer_socket(request):
     
     async for msg in ws:
         if msg.type == aiohttp.WSMsgType.TEXT:
-            if msg.data == 'close':
+            if msg.data == 'stop':
+                print('stopping sniffer')
                 await ws.close()
-            else:
-                print('msg.data: %s' % msg.data)
+            elif 'count' in msg.data:
+                print('starting sniffer')
                 config = get_sniffer_config(passed_config=msg.data)
                 new_loop = asyncio.new_event_loop()
                 asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)

@@ -3,20 +3,39 @@ class Network {
     this.hostname = hostname;
     this.port = port;
     this.socket = new WebSocket(`ws://${hostname}:${port}/sniffer`);
+    this.socketStatus = this.translateReadyState(this.socket.readyState);
+    this.running = 0;
   }
 
-  configSniffer(count, filter, iface) {
+  translateReadyState(readyState) {
+    if (readyState === 0) {
+      return "CONNECTING";
+    } else if (readyState === 1) {
+      return "OPEN";
+    } else if (readyState === 2) {
+      return "CLOSING";
+    } else if (readyState === 3) {
+      return "CLOSED";
+    }
+  }
+
+  runSniffer(count, filter, iface) {
     config = {
       count: count,
       filter: filter,
       iface: iface
     };
     this.socket.onopen = () => this.socket.send(JSON.stringify(config));
+    this.running = 1;
+    this.socket.onmessage = event =>
+      console.log(`configSniffer: ${event.data}`);
   }
 
-  runSniffer() {
-    this.socket.onopen = () => this.socket.send("message from client");
-    this.socket.onmessage = event => console.log(`message: ${event.data}`);
+  stopSniffer() {
+    if (this.socket.readyState === 1 && this.running === 1) {
+      this.socket.send("stop");
+      this.socket.onclose = event => (this.running = 0);
+    }
   }
 
   getInterface() {
@@ -27,10 +46,10 @@ class Network {
     request.send();
 
     request.onload = function(event) {
-      console.log(request.response);
+      console.log(`getInterface: ${request.response}`);
     };
   }
 }
 
-console.log("main.js loaded!");
+console.log("main.js loaded");
 module.exports = Network;
