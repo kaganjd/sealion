@@ -4,12 +4,15 @@ from scapy.all import *
 import threading
 import asyncio
 import utils
-from utils import get_interface, get_sniffer_config, start_loop, enqueue_packets, dequeue_packets
+from utils import get_interface, get_sniffer_config, start_loop, enqueue_packets, dequeue_packets, get_arp_table, get_neighbor_sniffer_config
 
 utils.init()
 
 async def serve_interface(request):
     return web.json_response(get_interface())
+
+async def arp_scan(request):
+    return web.json_response(get_arp_table(request.query))
 
 async def sniffer_socket(request):
     ws = web.WebSocketResponse()
@@ -20,9 +23,12 @@ async def sniffer_socket(request):
             if msg.data == 'stop':
                 print('stopping sniffer')
                 await ws.close()
-            elif 'count' in msg.data:
-                print('starting sniffer')
-                config = get_sniffer_config(passed_config=msg.data)
+            elif 'ifaddr' in msg.data:
+                print('Starting neighbor sniff')
+                config = get_neighbor_sniffer_config(msg.data)
+            else:
+                print('Starting self sniff')
+                config = get_sniffer_config(msg.data)
                 new_loop = asyncio.new_event_loop()
                 asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
                 threading.Thread(target=start_loop, args=(new_loop,)).start()

@@ -1,6 +1,7 @@
 import json
 from scapy.all import *
 import asyncio
+from urllib.parse import parse_qs, urlparse
 
 def init():
     global packet_queue
@@ -28,7 +29,7 @@ def get_interface():
         interface_info = show_interfaces()
         return interface_info
 
-def get_sniffer_config(**kwargs):
+def get_sniffer_config(config_from_client):
     default_config = {
         "count": 5,
         "filter": "",
@@ -36,22 +37,27 @@ def get_sniffer_config(**kwargs):
         "lfilter": "",
         "store": 0
     }
-
-    def update_config(key):
-        passed_config = json.loads(kwargs['passed_config'])
-        try:
-            if passed_config.get(key) is not None:
-                print('Updating "%s" in default_config' % key)
-                passed_val = passed_config.get(key)
-                default_config.update({key: passed_val})
-        # Not actually sure this error is possible anymore, but can be a placeholder depending on how we structure the config on the client side
-        except AttributeError:
-            print('No key "%s" in the args dict that was passed to get_sniffer_config; using the default value' % key)
-
+    new_config = json.loads(config_from_client)
     for key in default_config:
-        update_config(key)
+        update_config(key, default_config, new_config)
+    updated_config = default_config
+    return updated_config
 
-    return default_config
+def get_neighbor_sniffer_config(config_from_client):
+    new_config = json.loads(config_from_client)
+    print(type(new_config))
+    print(new_config)
+    print(new_config['ifaddr'])
+
+def update_config(key, default_config, new_config):
+    try:
+        if new_config.get(key) is not None:
+            print('Updating "%s" in default_config' % key)
+            new_val = new_config.get(key)
+            default_config.update({key: new_val})
+    # Not actually sure this error is possible anymore, but can be a placeholder depending on how we structure the config on the client side
+    except AttributeError:
+        print('No key "%s" in the args dict that was passed; using the default value' % key)
 
 # from https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
 def start_loop(loop):
@@ -76,3 +82,13 @@ async def dequeue_packets(ws):
             from_q = '{}--{}'.format(logger, pkt_summary)
             # print(from_q)
             await ws.send_str(from_q)
+
+def get_arp_table(ifaddr):
+    four_octets = ifaddr.get('ifaddr').split('.')
+    del four_octets[-1]
+    three_octets = '.'.join(four_octets)
+    subnet = '{}{}'.format(three_octets, '.*')
+    # http://redimp.de/posts/scapy-without-entering-promiscuous-mode/
+    answered, unanswered = arping(subnet)
+    hosts = [(host[1].hwsrc, host[1].psrc) for host in answered]
+    return json.dumps(hosts)

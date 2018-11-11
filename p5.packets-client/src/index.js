@@ -19,16 +19,16 @@ class Network {
     }
   }
 
-  runSniffer(count, filter, iface) {
-    config = {
-      count: count,
+  // TODO: Make iface optional arg; remove filter?
+  sniffSelf(iface, packetCount, filter) {
+    const config = {
+      count: packetCount,
       filter: filter,
       iface: iface
     };
     this.socket.onopen = () => this.socket.send(JSON.stringify(config));
     this.running = 1;
-    this.socket.onmessage = event =>
-      console.log(`configSniffer: ${event.data}`);
+    this.socket.onmessage = event => console.log(`sniffSelf: ${event.data}`);
   }
 
   stopSniffer() {
@@ -38,16 +38,33 @@ class Network {
     }
   }
 
-  getInterface() {
-    const url = `http://${hostname}:${port}/interface`;
-    let request = new XMLHttpRequest();
-    request.open("GET", url);
-    request.setRequestHeader("Content-Type", "application/json");
-    request.send();
-
-    request.onload = function(event) {
-      console.log(`getInterface: ${request.response}`);
+  // TODO: Make iface optional arg
+  sniffNeighbor(ifaddr, packetCount) {
+    const config = {
+      ifaddr: ifaddr,
+      count: packetCount
     };
+    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
+    this.running = 1;
+    this.socket.onmessage = event =>
+      console.log(`sniffNeighbor: ${event.data}`);
+  }
+
+  async arpScan(ifaddr) {
+    // https://fetch.spec.whatwg.org/#fetch-api
+    var url = new URL(`http://${hostname}:${port}/arp`),
+      params = { ifaddr: ifaddr };
+    Object.keys(params).forEach(key =>
+      url.searchParams.append(key, params[key])
+    );
+    let response = await fetch(url);
+    return response.json();
+  }
+
+  async getInterface() {
+    var url = `http://${hostname}:${port}/interface`;
+    let response = await fetch(url);
+    return response.json();
   }
 }
 
