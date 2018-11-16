@@ -2,9 +2,11 @@ class Network {
   constructor(hostname, port) {
     this.hostname = hostname;
     this.port = port;
-    this.socket = new WebSocket(`ws://${hostname}:${port}/sniffer`);
+    this.socket = new WebSocket(`ws://${hostname}:${port}/sniff`);
     this.socketStatus = this.translateReadyState(this.socket.readyState);
     this.running = 0;
+    this.arpTable = "No ARP table yet";
+    this.networkInfo = "No network info yet";
   }
 
   translateReadyState(readyState) {
@@ -19,53 +21,81 @@ class Network {
     }
   }
 
-  // TODO: Make iface optional arg; remove filter?
-  sniffSelf(iface, packetCount, filter) {
+  sniffSelf(packetCount, iface = "", filter = "") {
     const config = {
-      count: packetCount,
-      filter: filter,
-      iface: iface
-    };
-    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
-    this.running = 1;
-    this.socket.onmessage = event => console.log(`sniffSelf: ${event.data}`);
-  }
-
-  stopSniffer() {
-    if (this.socket.readyState === 1 && this.running === 1) {
-      this.socket.send("stop");
-      this.socket.onclose = event => (this.running = 0);
-    }
-  }
-
-  // TODO: Make iface optional arg
-  sniffNeighbor(ifaddr, packetCount) {
-    const config = {
-      ifaddr: ifaddr,
-      count: packetCount
+      fname: "sniffSelf",
+      args: {
+        count: packetCount,
+        iface: iface,
+        filter: filter
+      }
     };
     this.socket.onopen = () => this.socket.send(JSON.stringify(config));
     this.running = 1;
     this.socket.onmessage = event =>
-      console.log(`sniffNeighbor: ${event.data}`);
+      console.log(`${config.fname}: ${event.data}`);
   }
 
-  async arpScan(ifaddr) {
-    // https://fetch.spec.whatwg.org/#fetch-api
-    var url = new URL(`http://${hostname}:${port}/arp`),
-      params = { ifaddr: ifaddr };
-    Object.keys(params).forEach(key =>
-      url.searchParams.append(key, params[key])
-    );
-    let response = await fetch(url);
-    return response.json();
+  stopSniffer() {
+    const config = {
+      fname: "stopSniffer"
+    };
+    if (this.socket.readyState === 1 && this.running === 1) {
+      this.socket.send(JSON.stringify(config));
+      this.socket.onclose = event => {
+        this.running = 0;
+        return this.running;
+      };
+    }
   }
 
-  async getInterface() {
-    var url = `http://${hostname}:${port}/interface`;
-    let response = await fetch(url);
-    return response.json();
+  // TODO: add 'gateway' as a param?
+  sniffNeighbor(packetCount, ifaddrToSniff) {
+    const config = {
+      fname: "sniffNeighbor",
+      args: {
+        count: packetCount,
+        ifaddr: ifaddrToSniff
+      }
+    };
+    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
+    this.running = 1;
+    this.socket.onmessage = event =>
+      console.log(`${config.fname}: ${event.data}`);
   }
+
+  arpScan(ifaddr) {
+    const config = {
+      fname: "arpScan",
+      args: {
+        ifaddr
+      }
+    };
+    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
+    this.running = 1;
+    this.socket.onmessage = event => {
+      this.arpTable = JSON.parse(event.data);
+      return this.arpTable;
+    };
+  }
+
+  getNetworkInfo() {
+    const config = {
+      fname: "getNetworkInfo"
+    };
+    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
+    this.socket.onmessage = event => {
+      this.networkInfo = JSON.parse(event.data);
+      return this.networkInfo;
+    };
+  }
+
+  // async getInterface() {
+  //   var url = `http://${hostname}:${port}/interface`;
+  //   // https://fetch.spec.whatwg.org/#fetch-api
+  //   let response = await fetch(url);
+  //   return response.json();
+  // }
 }
 
 console.log("main.js loaded");

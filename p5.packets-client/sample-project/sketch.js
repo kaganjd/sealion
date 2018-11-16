@@ -1,7 +1,6 @@
 const hostname = "localhost";
 const port = 8080;
 const packet = new Sniffer(hostname, port);
-let networkInfo = [];
 
 function setup() {
   createCanvas(400, 400);
@@ -9,28 +8,17 @@ function setup() {
   // 'Sniffer' name comes from Webpack output.library
 
   // get network info; goes with arpScan() alternative below
-  // packet.getInterface()
+  // packet.getNetworkInfo()
   //             .then(data => networkInfo.push(data))
-
+  packet.getNetworkInfo();
   // arp
-  packet
-    .getInterface()
-    .then(getInterfaceObj => packet.arpScan(getInterfaceObj.ifaddr))
-    .then(arpResults => console.log(arpResults));
+  packet.arpScan("192.168.0.50");
 
   // sniff
-  packet.sniffSelf(5, "", "en0");
-  packet.sniffNeighbor("192.168.1.1", 25);
+  // packet.sniffSelf(5);
+  packet.sniffNeighbor(25, "192.168.0.51");
 }
 
-function draw() {
-  // arp()
-}
+function draw() {}
 
-// arpScan() alternative if you want to avoid promises
-// function arp() {
-//   if (networkInfo.length > 0) {
-//     let myIp = networkInfo[0].ifaddr
-//     packet.arpScan(myIp)
-//   }
-// }
+console.log(packet.networkInfo);
