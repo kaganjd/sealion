@@ -1,5 +1,4 @@
-from views import serve_interface, sniffer_socket
+from views import sniff_arp_handler
 
 def setup_routes(app):
-    app.router.add_get('/interface', serve_interface),
-    app.router.add_get('/sniffer', sniffer_socket)
+    app.router.add_get('/sniff', sniff_arp_handler),

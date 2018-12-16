@@ -6,10 +6,19 @@ function setup() {
   createCanvas(400, 400);
   background(100, 255, 255);
   // 'Sniffer' name comes from Webpack output.library
-  packet.getInterface();
-  packet.runSniffer(5, "", "en0");
+
+  // get network info; goes with arpScan() alternative below
+  // packet.getNetworkInfo()
+  //             .then(data => networkInfo.push(data))
+  packet.getNetworkInfo();
+  // arp
+  packet.arpScan("192.168.0.50");
+
+  // sniff
+  // packet.sniffSelf(5);
+  packet.sniffNeighbor(25, "192.168.0.51");
 }
 
-function draw() {
-  packet.stopSniffer();
-}
+function draw() {}
+
+console.log(packet.networkInfo);
