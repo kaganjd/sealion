@@ -89,13 +89,6 @@ class Network {
       return this.networkInfo;
     };
   }
-
-  // async getInterface() {
-  //   var url = `http://${hostname}:${port}/interface`;
-  //   // https://fetch.spec.whatwg.org/#fetch-api
-  //   let response = await fetch(url);
-  //   return response.json();
-  // }
 }
 
 console.log("main.js loaded");

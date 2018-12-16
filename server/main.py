@@ -1,6 +1,5 @@
 from aiohttp import web
 from routes import setup_routes
-from middleware import cors_factory
 import subprocess
 
 def run_cmds(*cmds):
@@ -37,7 +36,7 @@ def restore_permissions():
   run_cmds(subtract_permissions, disable_forwarding)
 
 check_permissions()
-app = web.Application(middlewares=[cors_factory])
+app = web.Application()
 try:
   setup_routes(app)
   web.run_app(app)

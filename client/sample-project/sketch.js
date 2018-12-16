@@ -12,11 +12,11 @@ function setup() {
   //             .then(data => networkInfo.push(data))
   packet.getNetworkInfo();
   // arp
-  packet.arpScan("192.168.0.50");
+  packet.arpScan("192.168.1.50");
 
   // sniff
   // packet.sniffSelf(5);
-  packet.sniffNeighbor(25, "192.168.0.51");
+  // packet.sniffNeighbor(25, "192.168.0.51");
 }
 
 function draw() {}
