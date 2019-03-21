@@ -7,8 +7,7 @@ For first-time setup with virtualenv:
 1. `cd p5.packets-server`
 2. `virtualenv venv`
 3. `source venv/bin/activate`
-4. `pip install pipenv`
-5. `pipenv install` installs the dependencies listed in Pipfile
+4. `pip install -r requirements.txt` to install dependencies (`pip install NEW_PACKAGE && pip freeze > requirements.txt` to save new dependencies)
 
 Start server:
 
