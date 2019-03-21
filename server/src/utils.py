@@ -119,11 +119,22 @@ async def dequeue_packets(ws):
         if pkt_summary:
             await ws.send_str(pkt_summary)
 
-def get_arp_table(ifaddr):
+def validate_ifaddr(ifaddr):
+    try:
+        if 7 <= len(ifaddr) <= 15 and ifaddr.count('.') == 3:
+            return ifaddr
+    except:
+        print('Address is an unexpected format')
+
+def subnet_from_ifaddr(ifaddr):
     four_octets = ifaddr.split('.')
     del four_octets[-1]
     three_octets = '.'.join(four_octets)
     subnet = '{}{}'.format(three_octets, '.*')
+    return subnet
+
+def get_arp_table(ifaddr):
+    subnet = subnet_from_ifaddr(validate_ifaddr(ifaddr))
     # http://redimp.de/posts/scapy-without-entering-promiscuous-mode/
     answered, unanswered = arping(subnet)
     hosts = {}
