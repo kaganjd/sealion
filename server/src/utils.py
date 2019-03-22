@@ -5,35 +5,43 @@ from urllib.parse import parse_qs, urlparse
 # ARP spoofing functions from From Justin Sietz https://nostarch.com/blackhatpython
 import os
 import signal
-import sys
 import threading
 import time
+import platform
 
 def init():
     global packet_queue
     packet_queue = Queue(maxsize=50)
 
-def get_interface():
+def darwin_iface():
     # https://stackoverflow.com/questions/446209/possible-values-from-sys-platform
-    if sys.platform == 'darwin':
+    a = read_routes()
+    interface_info = {
+        'gw': a[0][2],
+        'netif': a[0][3],
+        'ifaddr': a[0][4],
+    }
+    return interface_info
+
+def linux_iface():
+    print(get_if_list())
+
+def win_iface():
+    print(show_interfaces())
+
+def get_interface():
+    if platform.system() == 'Darwin':
         from scapy.arch.unix import read_routes
-        a = read_routes()
-        interface_info = {
-            'gw': a[0][2],
-            'netif': a[0][3],
-            'ifaddr': a[0][4],
-        }
-        return json.dumps(interface_info)
-
-    elif sys.platform == 'linux2':
+        d = darwin_iface()
+        return d
+    elif platform.system() == 'Linux':
         from scapy.arch.linux import get_if_list
-        interface_info = get_if_list()
-        return interface_info
-
-    elif sys.platform == 'win32':
+        l = linux_iface()
+        return l
+    elif platform.system() == 'Windows':
         from scapy.arch.windows.__init__ import show_interfaces
-        interface_info = show_interfaces()
-        return interface_info
+        w = win_iface()
+        return w
 
 def get_sniffer_config(config_from_client):
     default_config = {
@@ -58,7 +66,7 @@ def restore_network(gateway_ip, gateway_mac, neighbor_ip, neighbor_mac):
 def get_mac(ip_address):
     resp, unans = sr(ARP(op=1, hwdst="ff:ff:ff:ff:ff:ff", pdst=ip_address), retry=2, timeout=10)
     for s,r in resp:
-        return r[ARP].hwsrc
+        return r.hwsrc
     return None
 
 def arp_spoof(config_from_client):
@@ -144,4 +152,4 @@ def get_arp_table(ifaddr):
         hosts[index] = {}
         hosts[index]['mac'] = mac
         hosts[index]['ipAddr'] = ipAddr
-    return json.dumps(hosts)
+    return hosts

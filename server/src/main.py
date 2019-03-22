@@ -1,6 +1,7 @@
 from aiohttp import web
 from routes import setup_routes
 import subprocess
+import config
 
 def run_cmds(*cmds):
   for index, cmd in enumerate(cmds):
@@ -12,10 +13,10 @@ def run_cmds(*cmds):
 
 def check_permissions():
   # TODO: check for other operating systems
-  ls_permissions = 'ls -l /dev/bpf*'
+  ls_permissions = config.OSX_LS_BPF_PERMISSIONS
   permissions = subprocess.run(ls_permissions, shell=True, check=True, stdout=subprocess.PIPE)
   permissions_str = permissions.stdout.decode()
-  if 'crw-rw-r--' in permissions_str:
+  if config.OSX_BPF_PERMISSIONS in permissions_str:
     try:
       set_permissions()
     except:
@@ -24,15 +25,15 @@ def check_permissions():
     print('Permissions already set')
 
 def set_permissions():
-  add_permissions = 'chmod o+r /dev/bpf*'
-  enable_forwarding = 'sysctl net.inet.ip.forwarding=1'
-  # enable_firewall = 'pfctl -e'
+  add_permissions = config.OSX_ADD_BPF_PERMISSIONS
+  enable_forwarding = config.OSX_ENABLE_FWD
+  # enable_firewall = config.OSX_ENABLE_FIREWALL
   run_cmds(add_permissions, enable_forwarding)
 
 def restore_permissions():
-  subtract_permissions = 'chmod o-r /dev/bpf*'
-  disable_forwarding = 'sysctl net.inet.ip.forwarding=0'
-  # disable_firewall = 'pfctl -d'
+  subtract_permissions = config.OSX_SUBTR_BPF_PERMISSIONS
+  disable_forwarding = config.OSX_DISABLE_FWD
+  # disable_firewall = config.OSX_DISABLE_FIREWALL
   run_cmds(subtract_permissions, disable_forwarding)
 
 check_permissions()

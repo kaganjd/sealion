@@ -1,4 +1,5 @@
 import aiohttp
+import json
 from aiohttp import web
 from scapy.all import *
 import threading
@@ -22,12 +23,12 @@ async def sniff_arp_handler(request):
                 await ws.close()
             elif json_msg['fname'] == 'getNetworkInfo':
                 print('Getting network info')
-                await ws.send_str(get_interface())
+                json_iface = json.dumps(get_interface())
+                await ws.send_str(json_iface)
             elif json_msg['fname'] == 'arpScan':
-                arp_table = get_arp_table(json_msg['args']['ifaddr'])
-                await ws.send_str(arp_table)
+                json_arp_table = json.dumps(get_arp_table(json_msg['args']['ifaddr']))
+                await ws.send_str(json_arp_table)
             elif json_msg['fname'] == 'sniffNeighbor':
-                import json
                 print('Starting neighbor sniff')
                 json_msg_data = json.loads(msg.data)
                 neighbor_ip = json_msg_data['args']['ifaddr']
