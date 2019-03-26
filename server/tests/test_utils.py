@@ -58,17 +58,17 @@ def test_get_interface_linux(monkeypatch):
 class TestMockScapySr(TestCase):
   @mock.patch('utils.sr')
   def test_scapy_sr(self, mocked_scapy_sr):
-    '''Mock Scapy's sr() return and check that packet parsing returns the expect MAC address'''
+    '''Mock Scapy's sr() return and check that packet parsing returns the expected MAC address'''
     arp_response = namedtuple('arp_response', 'op hwdst pdst hwtype ptype hwlen plen hwsrc psrc')
     responses = [
       arp_response(op='who-has', hwdst='ff:ff:ff:ff:ff:ff', pdst='192.168.7.189', hwtype='', ptype='', hwlen='', plen='', hwsrc='', psrc=''),
-      arp_response(op='is-at', hwdst='60:03:08:95:30:8c', pdst='192.168.7.190', hwtype='0x1', ptype='0x800', hwlen=6, plen=4, hwsrc='4c:57:ca:56:b2:e3', psrc='192.168.7.189')]
+      arp_response(op='is-at', hwdst='60:03:08:8c:44:72', pdst='192.168.7.190', hwtype='0x1', ptype='0x800', hwlen=6, plen=4, hwsrc='4c:57:ca:e9:b0:83', psrc='192.168.7.189')]
     unanswered_tuple = ((),)
     responded_tuple = (responses, ())
     mocked_scapy_sr.return_value = (responded_tuple, unanswered_tuple)
     resp, unans = mocked_scapy_sr.return_value
     x = get_mac('192.168.7.189')
-    assert x == '4c:57:ca:56:b2:e3'
+    assert x == '4c:57:ca:e9:b0:83'
 
 # TODO: This test fails on Darwin
 # def test_get_interface_windows(monkeypatch):
