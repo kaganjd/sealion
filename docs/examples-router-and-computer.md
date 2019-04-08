@@ -1,3 +1,10 @@
+---
+id: examples-router-and-computer
+title: Router and Computer
+sidebar_label: Router and Computer
+---
+
+```js
 // Instantiate a SeaLion instance with hostname and port
 const hostname = "localhost";
 const port = 8080;
@@ -15,7 +22,7 @@ function draw() {
   const lineHeight = 20
   textSize(lineHeight)
   textAlign(LEFT, CENTER)
-  // Check if networkInfo has been populated by getNetworkInfo() yet by seeing if the 'gw' key exists
+  // Check if networkInfo has been populated by getNetworkInfo() yet
   if (sl.networkInfo) {
     // Draw the gateway in one corner of the canvas
     const gwString = `Router 👾 ${sl.networkInfo.gw}`
@@ -29,3 +36,4 @@ function draw() {
     text(ifaddrString, width - ifaddrStringWidth, height - lineHeight)
   }
 }
+```

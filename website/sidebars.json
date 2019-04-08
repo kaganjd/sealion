@@ -1,0 +1,34 @@
+{
+  "about": {
+    "Getting Started": [
+      "getting-started",
+      "with-p5js"
+    ],
+    "Examples": [
+      "examples-router-and-computer",
+      "examples-arp-table"
+    ]
+  },
+  "docs": {
+    "Constructor": [
+      "api-sniffer"
+    ],
+    "Methods": [
+      "api-arpscan",
+      "api-arptable",
+      "api-getnetworkinfo",
+      "api-sniffneighbor",
+      "api-sniffself",
+      "api-stopsniffer",
+      "api-translatereadystate"
+    ],
+    "Properties": [
+      "api-arptable",
+      "api-hostname",
+      "api-getnetworkinfo",
+      "api-port",
+      "api-running",
+      "api-socketstatus"
+    ]
+  }
+}

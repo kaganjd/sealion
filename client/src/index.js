@@ -5,9 +5,13 @@ class Network {
     this.socket = new WebSocket(`ws://${hostname}:${port}/sniff`);
     this.socketStatus = this.translateReadyState(this.socket.readyState);
     this.running = 0;
-    this.arpTable = "No ARP table yet";
-    this.networkInfo = "No network info yet";
+    this.arpTable = '';
+    this.networkInfo = '';
   }
+
+  //TODO: Add socketHandler method to set up, shut down, and maintain this.running instead of having this.socket.onopen in every method
+  // socketHandler() {
+  // }
 
   translateReadyState(readyState) {
     if (readyState === 0) {
@@ -30,10 +34,13 @@ class Network {
         filter: filter
       }
     };
-    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
-    this.running = 1;
-    this.socket.onmessage = event =>
-      console.log(`${config.fname}: ${event.data}`);
+    return new Promise((resolve, reject) => {
+      if (this.socket.readyState === 1) {
+        this.socket.send(JSON.stringify(config));
+      }
+      this.socket.onmessage = event =>
+        resolve(console.log(`${config.fname}: ${event.data}`));
+    });
   }
 
   stopSniffer() {
@@ -58,10 +65,13 @@ class Network {
         ifaddr: ifaddrToSniff
       }
     };
-    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
-    this.running = 1;
-    this.socket.onmessage = event =>
-      console.log(`${config.fname}: ${event.data}`);
+    return new Promise((resolve, reject) => {
+      if (this.socket.readyState === 1) {
+        this.socket.send(JSON.stringify(config));
+      }
+      this.socket.onmessage = event =>
+        resolve(console.log(`${config.fname}: ${event.data}`));
+    })
   }
 
   arpScan(ifaddr) {
@@ -71,23 +81,28 @@ class Network {
         ifaddr
       }
     };
-    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
-    this.running = 1;
-    this.socket.onmessage = event => {
-      this.arpTable = JSON.parse(event.data);
-      return this.arpTable;
-    };
+    return new Promise((resolve, reject) => {
+      if (this.socket.readyState === 1) {
+        this.socket.send(JSON.stringify(config));
+      }
+      this.socket.onmessage = event => {
+        this.arpTable = JSON.parse(event.data);
+        resolve(this.arpTable)
+      }
+    });
   }
 
   getNetworkInfo() {
     const config = {
       fname: "getNetworkInfo"
     };
-    this.socket.onopen = () => this.socket.send(JSON.stringify(config));
-    this.socket.onmessage = event => {
-      this.networkInfo = JSON.parse(event.data);
-      return this.networkInfo;
-    };
+    return new Promise((resolve, reject) => {
+      this.socket.onopen = () => this.socket.send(JSON.stringify(config));
+      this.socket.onmessage = event => {
+        this.networkInfo = JSON.parse(event.data);
+        resolve(this.networkInfo)
+      }
+    });
   }
 }
 

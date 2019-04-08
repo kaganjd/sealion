@@ -5,3 +5,5 @@ node_modules/
 */dist/main.js
 */sample-project/p5.min.js
 .coverage
+
+website/build
