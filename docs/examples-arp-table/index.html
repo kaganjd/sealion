@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Arp Table · 🌊 Sea Lion</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="&lt;pre&gt;&lt;code class=&quot;hljs css language-js&quot;&gt;&lt;/code&gt;&lt;/pre&gt;
+"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Arp Table · 🌊 Sea Lion"/><meta property="og:type" content="website"/><meta property="og:url" content="https://kaganjd.github.io/p5.packets/"/><meta property="og:description" content="&lt;pre&gt;&lt;code class=&quot;hljs css language-js&quot;&gt;&lt;/code&gt;&lt;/pre&gt;
+"/><meta property="og:image" content="https://kaganjd.github.io/p5.packets/img/docusaurus.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://kaganjd.github.io/p5.packets/img/docusaurus.png"/><link rel="shortcut icon" href="/p5.packets/undefined"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/p5.packets/css/main.css"/><script src="/p5.packets/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/p5.packets/"><h2 class="headerTitle">🌊 Sea Lion</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/p5.packets/docs/getting-started" target="_self">Getting Started</a></li><li class=""><a href="/p5.packets/docs/api-hostname" target="_self">API</a></li><li class="siteNavGroupActive"><a href="/p5.packets/docs/examples-router-and-computer" target="_self">Examples</a></li><li class=""><a target="_self">Blog</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>Examples</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Getting Started</h3><ul class=""><li class="navListItem"><a class="navItem" href="/p5.packets/docs/getting-started">Getting Started</a></li><li class="navListItem"><a class="navItem" href="/p5.packets/docs/with-p5js">with p5.js</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Examples</h3><ul class=""><li class="navListItem"><a class="navItem" href="/p5.packets/docs/examples-router-and-computer">Router and Computer</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/p5.packets/docs/examples-arp-table">Arp Table</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              const headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                if (event.target.tagName === 'A') {
+                  document.body.classList.remove('tocActive');
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Arp Table</h1></header><article><div><span><pre><code class="hljs css language-js"><span class="hljs-comment">// Instantiate a SeaLion instance with hostname and port</span>
+<span class="hljs-keyword">const</span> hostname = <span class="hljs-string">"localhost"</span>;
+<span class="hljs-keyword">const</span> port = <span class="hljs-number">8080</span>;
+<span class="hljs-keyword">const</span> sl = <span class="hljs-keyword">new</span> SeaLion(hostname, port);
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setup</span>(<span class="hljs-params"></span>) </span>{
+  createCanvas(<span class="hljs-number">400</span>, <span class="hljs-number">400</span>);
+  background(<span class="hljs-number">0</span>);
+  sl.getNetworkInfo()
+    .then(<span class="hljs-function"><span class="hljs-params">networkResults</span> =&gt;</span> sl.arpScan(networkResults.gw)
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">draw</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// Create some text settings</span>
+  <span class="hljs-keyword">const</span> lineHeight = <span class="hljs-number">40</span>
+  textSize(lineHeight)
+  textAlign(LEFT, CENTER)
+
+  <span class="hljs-keyword">if</span> (sl.arpTable[<span class="hljs-number">0</span>][<span class="hljs-string">'mac'</span>]) {
+    <span class="hljs-keyword">for</span> (i=<span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {
+      fill(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);
+      text(sl.arpTable[i][<span class="hljs-string">'mac'</span>], <span class="hljs-number">0</span>, <span class="hljs-number">40</span>*i)
+      fill(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">255</span>);
+      text(sl.arpTable[i][<span class="hljs-string">'mac'</span>], <span class="hljs-number">2</span>, <span class="hljs-number">40</span>*i + <span class="hljs-number">2</span>)
+    }
+  }
+}
+</code></pre>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/p5.packets/docs/examples-router-and-computer"><span class="arrow-prev">← </span><span>Router and Computer</span></a></div></div></div><nav class="onPageNav"></nav></div><footer></footer></div></body></html>
