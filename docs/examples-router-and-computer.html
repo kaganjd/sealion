@@ -67,8 +67,8 @@
   <span class="hljs-keyword">const</span> lineHeight = <span class="hljs-number">20</span>
   textSize(lineHeight)
   textAlign(LEFT, CENTER)
-  <span class="hljs-comment">// Check if networkInfo has been populated by getNetworkInfo() yet by seeing if the 'gw' key exists</span>
-  <span class="hljs-keyword">if</span> (sl.networkInfo.gw) {
+  <span class="hljs-comment">// Check if networkInfo has been populated by getNetworkInfo() yet</span>
+  <span class="hljs-keyword">if</span> (sl.networkInfo) {
     <span class="hljs-comment">// Draw the gateway in one corner of the canvas</span>
     <span class="hljs-keyword">const</span> gwString = <span class="hljs-string">`Router 👾 <span class="hljs-subst">${sl.networkInfo.gw}</span>`</span>
     <span class="hljs-keyword">const</span> gwStringWidth = textWidth(gwString)
@@ -82,5 +82,4 @@
   }
 }
 </code></pre>
-<p><img src="/sealion/docs/assets/getNetworkInfo" alt="Router and computer"></p>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/sealion/docs/with-p5js"><span class="arrow-prev">← </span><span>with p5.js</span></a><a class="docs-next button" href="/sealion/docs/examples-arp-table"><span>Arp Table</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"></nav></div><footer></footer></div></body></html>
