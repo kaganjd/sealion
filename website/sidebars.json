@@ -17,6 +17,7 @@
       "api-arpscan",
       "api-arptable",
       "api-getnetworkinfo",
+      "api-open",
       "api-sniffneighbor",
       "api-sniffself",
       "api-stopsniffer",

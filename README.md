@@ -52,4 +52,5 @@ $ GIT_USER=<GIT_USER> \
 Uses pytest
 
 - `$ pytest` from `server/` directory runs tests
+- `$ pytest --cov=src` from `server/` creates a coverage report
 - add tests to `server/tests/` directory with the naming convention `test_*.py`

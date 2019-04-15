@@ -10,8 +10,12 @@ class Network {
   }
 
   //TODO: Add socketHandler method to set up, shut down, and maintain this.running instead of having this.socket.onopen in every method
-  // socketHandler() {
-  // }
+  open() {
+    return new Promise((resolve, reject) => {
+      this.socket.onopen = () =>
+        resolve()
+    })
+  }
 
   translateReadyState(readyState) {
     if (readyState === 0) {
@@ -97,7 +101,9 @@ class Network {
       fname: "getNetworkInfo"
     };
     return new Promise((resolve, reject) => {
-      this.socket.onopen = () => this.socket.send(JSON.stringify(config));
+      if (this.socket.readyState === 1) {
+        this.socket.send(JSON.stringify(config))
+      }
       this.socket.onmessage = event => {
         this.networkInfo = JSON.parse(event.data);
         resolve(this.networkInfo)

@@ -1,8 +1,9 @@
 import pytest
 import re
+import json
 from unittest import TestCase, mock
 from collections import namedtuple
-from utils import get_mac, get_interface, subnet_from_ifaddr, darwin_iface, linux_iface
+from utils import get_mac, get_interface, subnet_from_ifaddr, darwin_iface, linux_iface, get_sniffer_config
 
 @pytest.fixture
 def ifaddr():
@@ -19,9 +20,61 @@ def darwin_netif_list():
   '''Returns a list of Darwin network interface names'''
   return ['lo','en','p2p','stf','gif','bridge','utun','XHC','awdl','vboxnet']
 
+@pytest.fixture
+def default_config():
+  default_config = {
+    "count": 5,
+    "filter": "",
+    "iface": "en0",
+    "lfilter": "",
+    "store": 0
+  }
+  return default_config
+
+@pytest.fixture
+def new_config_no_iface():
+  '''Returns a new client config with different count, filter, store, and no iface'''
+  new_config = {
+    "count": 20,
+    "filter": "test",
+    "iface": "",
+    "store": 1
+  }
+  return new_config
+
+@pytest.fixture
+def new_config_new_iface():
+  '''Returns a new client config with different iface'''
+  new_config = {
+    "iface": "utun0"
+  }
+  return new_config
+
 def test_subnet_from_ifaddr(ifaddr, subnet):
   '''Check that subnet_from_ifaddr() returns the expected subnet'''
   assert subnet_from_ifaddr(ifaddr) == subnet
+
+def test_get_sniffer_config_no_iface_passed(new_config_no_iface):
+  '''Check that get_sniffer_config() takes in the config from client and returns a config with updated values where they exist'''
+  updated_config = {
+    "count": 20,
+    "filter": "test",
+    "iface": "en0",
+    "lfilter": "",
+    "store": 1
+  }
+  assert get_sniffer_config(new_config_no_iface) == updated_config
+
+def test_get_sniffer_config_new_iface_passed(new_config_new_iface):
+  '''Check that get_sniffer_config() takes in the config from client and returns a config with updated values where they exist'''
+  updated_config = {
+    "count": 5,
+    "filter": "",
+    "iface": "utun0",
+    "lfilter": "",
+    "store": 0
+  }
+  assert get_sniffer_config(new_config_new_iface) == updated_config
 
 def test_darwin_read_routes(monkeypatch):
   '''Check that read_routes() is called and parsed table values'''

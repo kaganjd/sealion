@@ -25,6 +25,10 @@
         "title": "networkInfo Property",
         "sidebar_label": "networkInfo"
       },
+      "api-open": {
+        "title": "open Method",
+        "sidebar_label": "open"
+      },
       "api-port": {
         "title": "port Property",
         "sidebar_label": "port"

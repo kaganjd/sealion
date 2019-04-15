@@ -14,7 +14,6 @@ def init():
     packet_queue = Queue(maxsize=50)
 
 def darwin_iface():
-    # https://stackoverflow.com/questions/446209/possible-values-from-sys-platform
     a = read_routes()
     interface_info = {
         'gw': a[0][2],
@@ -51,7 +50,7 @@ def get_sniffer_config(config_from_client):
         "lfilter": "",
         "store": 0
     }
-    new_config = json.loads(config_from_client)
+    new_config = config_from_client
     for key in default_config:
         update_config(key, default_config, new_config)
     updated_config = default_config
