@@ -1,32 +1,11 @@
-class Network {
+import SeaLionSocket from './slsocket';
+
+class SeaLion {
   constructor(hostname, port) {
-    this.hostname = hostname;
-    this.port = port;
-    this.socket = new WebSocket(`ws://${hostname}:${port}/sniff`);
-    this.socketStatus = this.translateReadyState(this.socket.readyState);
-    this.running = 0;
+    this.wsurl = `ws://${hostname}:${port}/sniff`
+    this.socket = new SeaLionSocket(this.wsurl)
     this.arpTable = '';
     this.networkInfo = '';
-  }
-
-  //TODO: Add socketHandler method to set up, shut down, and maintain this.running instead of having this.socket.onopen in every method
-  open() {
-    return new Promise((resolve, reject) => {
-      this.socket.onopen = () =>
-        resolve()
-    })
-  }
-
-  translateReadyState(readyState) {
-    if (readyState === 0) {
-      return "CONNECTING";
-    } else if (readyState === 1) {
-      return "OPEN";
-    } else if (readyState === 2) {
-      return "CLOSING";
-    } else if (readyState === 3) {
-      return "CLOSED";
-    }
   }
 
   sniffSelf(packetCount, iface = "", filter = "") {
@@ -38,26 +17,14 @@ class Network {
         filter: filter
       }
     };
-    return new Promise((resolve, reject) => {
-      if (this.socket.readyState === 1) {
-        this.socket.send(JSON.stringify(config));
-      }
-      this.socket.onmessage = event =>
-        resolve(console.log(`${config.fname}: ${event.data}`));
-    });
-  }
-
-  stopSniffer() {
-    const config = {
-      fname: "stopSniffer"
-    };
-    if (this.socket.readyState === 1 && this.running === 1) {
+    if (this.socket.readyState === 1) {
       this.socket.send(JSON.stringify(config));
-      this.socket.onclose = event => {
-        this.running = 0;
-        return this.running;
-      };
     }
+    return new Promise((resolve, reject) => {
+      this.socket.onmessage = event => {
+        resolve(console.log(`${config.fname}: ${event.data}`));
+      }
+    });
   }
 
   // TODO: add 'gateway' as a param?
@@ -69,13 +36,25 @@ class Network {
         ifaddr: ifaddrToSniff
       }
     };
+    if (this.socket.readyState === 1) {
+      this.validateIpAddress(ifaddrToSniff)
+      this.socket.send(JSON.stringify(config));
+    }
     return new Promise((resolve, reject) => {
-      if (this.socket.readyState === 1) {
-        this.socket.send(JSON.stringify(config));
-      }
-      this.socket.onmessage = event =>
+      this.socket.onmessage = event => {
         resolve(console.log(`${config.fname}: ${event.data}`));
-    })
+      }
+    });
+  }
+
+  // TODO: Move to a utils file
+  validateIpAddress(ipAddress) {
+    const periodCount = ipAddress.split('.').length -1
+    if ( 7 <= ipAddress.length <= 15 && periodCount === 3) {
+      return ipAddress
+    } else {
+      throw 'Error: The IP address you passed is not valid'
+    }
   }
 
   arpScan(ifaddr) {
@@ -85,10 +64,11 @@ class Network {
         ifaddr
       }
     };
+    if (this.socket.readyState === 1) {
+      this.validateIpAddress(ifaddr)
+      this.socket.send(JSON.stringify(config));
+    }
     return new Promise((resolve, reject) => {
-      if (this.socket.readyState === 1) {
-        this.socket.send(JSON.stringify(config));
-      }
       this.socket.onmessage = event => {
         this.arpTable = JSON.parse(event.data);
         resolve(this.arpTable)
@@ -100,10 +80,10 @@ class Network {
     const config = {
       fname: "getNetworkInfo"
     };
+    if (this.socket.running === 1) {
+      this.socket.send(JSON.stringify(config))
+    }
     return new Promise((resolve, reject) => {
-      if (this.socket.readyState === 1) {
-        this.socket.send(JSON.stringify(config))
-      }
       this.socket.onmessage = event => {
         this.networkInfo = JSON.parse(event.data);
         resolve(this.networkInfo)
@@ -112,5 +92,5 @@ class Network {
   }
 }
 
-console.log("main.js loaded");
-module.exports = Network;
+console.log("SeaLion loaded!");
+export default SeaLion;

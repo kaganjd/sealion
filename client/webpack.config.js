@@ -6,6 +6,7 @@ module.exports = {
     filename: "main.js",
     path: path.resolve(__dirname, "dist"),
     library: "SeaLion",
+    libraryExport: 'default',
     libraryTarget: "umd"
   },
   devServer: {
@@ -19,18 +20,6 @@ module.exports = {
         exclude: /node_modules/,
         loader: "babel-loader",
         options: {
-          presets: ["@babel/preset-env"],
-          plugins: [
-            [
-              "@babel/plugin-transform-runtime",
-              {
-                corejs: false,
-                helpers: true,
-                regenerator: true,
-                useESModules: false
-              }
-            ]
-          ],
           sourceType: "unambiguous"
         }
       }

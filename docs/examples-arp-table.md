@@ -12,8 +12,9 @@ const sl = new SeaLion(hostname, port);
 function setup() {
   createCanvas(400, 400);
   background(0);
-  sl.getNetworkInfo()
-    .then(networkResults => sl.arpScan(networkResults.gw)
+  sl.socket.open()
+    .then(() => sl.getNetworkInfo())
+    .then(networkResults => sl.arpScan(networkResults.gw))
 }
 
 function draw() {
@@ -23,7 +24,7 @@ function draw() {
   textAlign(LEFT, CENTER)
 
   if (sl.arpTable) {
-    for (i=0; i < 10; i++) {
+    for (i=0; i < 5; i++) {
       fill(0, 255, 255);
       text(sl.arpTable[i]['mac'], 0, 40*i)
       fill(255, 0, 255);
@@ -32,5 +33,3 @@ function draw() {
   }
 }
 ```
-
-![ARP Table](assets/arpTable.png)

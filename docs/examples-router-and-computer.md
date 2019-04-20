@@ -14,7 +14,8 @@ function setup() {
   createCanvas(400, 400);
   background(0);
   // Call getNetworkInfo()
-  sl.getNetworkInfo()
+  sl.socket.open()
+    .then(() => sl.getNetworkInfo())
 }
 
 function draw() {

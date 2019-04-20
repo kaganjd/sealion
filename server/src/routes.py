@@ -18,8 +18,8 @@ async def sniff_arp_handler(request):
     async for msg in ws:
         if msg.type == aiohttp.WSMsgType.TEXT:
             json_msg = aiohttp.WSMessage.json(msg)
-            if json_msg['fname'] == 'stopSniffer':
-                print('Stopping sniffer')
+            if json_msg['fname'] == 'closeSocket':
+                print('Closing socket')
                 await ws.close()
             elif json_msg['fname'] == 'getNetworkInfo':
                 print('Getting network info')
