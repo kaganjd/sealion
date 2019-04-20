@@ -58,8 +58,9 @@
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setup</span>(<span class="hljs-params"></span>) </span>{
   createCanvas(<span class="hljs-number">400</span>, <span class="hljs-number">400</span>);
   background(<span class="hljs-number">0</span>);
-  sl.getNetworkInfo()
-    .then(<span class="hljs-function"><span class="hljs-params">networkResults</span> =&gt;</span> sl.arpScan(networkResults.gw)
+  sl.socket.open()
+    .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> sl.getNetworkInfo())
+    .then(<span class="hljs-function"><span class="hljs-params">networkResults</span> =&gt;</span> sl.arpScan(networkResults.gw))
 }
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">draw</span>(<span class="hljs-params"></span>) </span>{
@@ -69,7 +70,7 @@
   textAlign(LEFT, CENTER)
 
   <span class="hljs-keyword">if</span> (sl.arpTable) {
-    <span class="hljs-keyword">for</span> (i=<span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {
+    <span class="hljs-keyword">for</span> (i=<span class="hljs-number">0</span>; i &lt; <span class="hljs-number">5</span>; i++) {
       fill(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);
       text(sl.arpTable[i][<span class="hljs-string">'mac'</span>], <span class="hljs-number">0</span>, <span class="hljs-number">40</span>*i)
       fill(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">255</span>);
@@ -78,5 +79,4 @@
   }
 }
 </code></pre>
-<p><img src="/sealion/docs/assets/arpTable.png" alt="ARP Table"></p>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/sealion/docs/examples-router-and-computer"><span class="arrow-prev">← </span><span>Router and Computer</span></a></div></div></div><nav class="onPageNav"></nav></div><footer></footer></div></body></html>
