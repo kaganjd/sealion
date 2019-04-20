@@ -144,11 +144,13 @@ def get_arp_table(ifaddr):
     subnet = subnet_from_ifaddr(validate_ifaddr(ifaddr))
     # http://redimp.de/posts/scapy-without-entering-promiscuous-mode/
     answered, unanswered = arping(subnet)
-    hosts = {}
+    hostsArray = []
+    hostObj = {}
     for index, host in enumerate(answered):
         mac = host[1].hwsrc
         ipAddr = host[1].psrc
-        hosts[index] = {}
-        hosts[index]['mac'] = mac
-        hosts[index]['ipAddr'] = ipAddr
-    return hosts
+        hostObj[index] = {}
+        hostObj[index]['mac'] = mac
+        hostObj[index]['ipAddr'] = ipAddr
+        hostsArray.append(hostObj[index])
+    return hostsArray
