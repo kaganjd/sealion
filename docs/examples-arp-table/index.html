@@ -58,8 +58,7 @@
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setup</span>(<span class="hljs-params"></span>) </span>{
   createCanvas(<span class="hljs-number">400</span>, <span class="hljs-number">400</span>);
   background(<span class="hljs-number">0</span>);
-  sl.socket
-    .open()
+  sl.socket.open()
     .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> sl.getNetworkInfo())
     .then(<span class="hljs-function"><span class="hljs-params">networkResults</span> =&gt;</span> sl.arpScan(networkResults.gw));
 }

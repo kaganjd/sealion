@@ -81,8 +81,7 @@
   createCanvas(<span class="hljs-number">400</span>, <span class="hljs-number">400</span>);
   background(<span class="hljs-number">0</span>);
   <span class="hljs-comment">// Open the socket</span>
-  sl.socket
-    .open()
+  sl.socket.open()
     <span class="hljs-comment">// Get network information</span>
     .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> sl.getNetworkInfo())
     <span class="hljs-comment">// Run arpScan using an IP address you get back form getNetworkInfo</span>
@@ -101,8 +100,7 @@
   createCanvas(<span class="hljs-number">400</span>, <span class="hljs-number">400</span>);
   background(<span class="hljs-number">0</span>);
   <span class="hljs-comment">// Open the socket</span>
-  sl.socket
-    .open()
+  sl.socket.open()
     <span class="hljs-comment">// Get network information</span>
     .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> sl.getNetworkInfo())
     <span class="hljs-comment">// Run arpScan using an IP address you get back form getNetworkInfo</span>
