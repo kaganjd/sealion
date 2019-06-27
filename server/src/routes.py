@@ -10,9 +10,10 @@ from utils import get_interface, get_sniffer_config, start_loop, enqueue_packets
 utils.init()
 
 def setup_routes(app):
-    app.router.add_get('/sniff', sniff_arp_handler),
+    app.router.add_get('/sniff', sniff_handler),
+    app.router.add_get('/main', main_handler)
 
-async def sniff_arp_handler(request):
+async def main_handler(request):
     ws = web.WebSocketResponse()
     await ws.prepare(request)
     async for msg in ws:
@@ -28,6 +29,20 @@ async def sniff_arp_handler(request):
             elif json_msg['fname'] == 'arpScan':
                 json_arp_table = json.dumps(get_arp_table(json_msg['args']['ifaddr']))
                 await ws.send_str(json_arp_table)
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+            print('ws connection closed with exception %s' % ws.exception())
+    print('websocket connection closed')
+    return ws
+
+async def sniff_handler(request):
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+    async for msg in ws:
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            json_msg = aiohttp.WSMessage.json(msg)
+            if json_msg['fname'] == 'closeSocket':
+                print('Closing socket')
+                await ws.close()
             elif json_msg['fname'] == 'sniffNeighbor':
                 print('Starting neighbor sniff')
                 json_msg_data = json.loads(msg.data)
