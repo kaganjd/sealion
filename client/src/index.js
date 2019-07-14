@@ -1,60 +1,14 @@
-import SeaLionSocket from "./slsocket";
+import Sniffer from "./sniffer";
 
 class SeaLion {
   constructor(hostname, port) {
     this.wsSniff = `ws://${hostname}:${port}/sniff`;
     this.wsMain = `ws://${hostname}:${port}/main`;
-    this.sniffSocket = new SeaLionSocket(this.wsSniff);
-    this.mainSocket = new SeaLionSocket(this.wsMain);
+    this.sniffer = new Sniffer(this.wsSniff);
+    this.mainSocket = new WebSocket(this.wsMain);
     this.arpTable = "";
     this.networkInfo = "";
     this.packetList = "";
-  }
-
-  sniffSelf(packetCount, iface = "", filter = "") {
-    const config = {
-      fname: "sniffSelf",
-      args: {
-        count: packetCount,
-        iface: iface,
-        filter: filter
-      }
-    };
-    const packetArray = [];
-
-    if (this.sniffSocket.readyState === 1) {
-      this.sniffSocket.send(JSON.stringify(config));
-    }
-
-    this.sniffSocket.onmessage = event => {
-      packetArray.push(event.data);
-      // if (packetArray.length == config.args.count) {
-      return new Promise((resolve, reject) => {
-        this.packetList = packetArray;
-        resolve(this.packetList);
-      });
-      // }
-    };
-  }
-
-  // TODO: add 'gateway' as a param?
-  sniffNeighbor(packetCount, ifaddrToSniff) {
-    const config = {
-      fname: "sniffNeighbor",
-      args: {
-        count: packetCount,
-        ifaddr: ifaddrToSniff
-      }
-    };
-    if (this.sniffSocket.readyState === 1) {
-      this.validateIpAddress(ifaddrToSniff);
-      this.sniffSocket.send(JSON.stringify(config));
-    }
-    return new Promise((resolve, reject) => {
-      this.sniffSocket.onmessage = event => {
-        resolve(console.log(`${config.fname}: ${event.data}`));
-      };
-    });
   }
 
   // TODO: Move to a utils file

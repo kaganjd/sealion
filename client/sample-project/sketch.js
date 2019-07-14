@@ -3,28 +3,30 @@ const hostname = "localhost";
 const port = 8080;
 const sl = new SeaLion(hostname, port);
 
+packets = [];
+
 function setup() {
   createCanvas(400, 400);
   background(0);
-
-  sl.mainSocket
-    .open()
-    .then(() => sl.getNetworkInfo())
-    .then(() => sl.arpScan(sl.networkInfo.gw))
-    .then(() => console.log(sl.arpTable));
-
-  sl.sniffSocket.open().then(() => sl.sniffSelf(10));
+  sl.sniffer.start("192.168.7.189");
 }
 
-function draw() {
-  const lineHeight = 40;
-  textSize(lineHeight);
-  textAlign(LEFT, CENTER);
+sl.sniffer.listener.on("packet", function(data) {
+  packets.push(data);
+});
 
-  if (sl.packetList) {
-    for (i = 0; i < sl.packetList.length; i++) {
-      fill(0, 255, 255);
-      text(sl.packetList[i], 0, i * 40);
-    }
+function draw() {
+  if (packets.length === 5) {
+    drawPackets();
   }
+}
+
+function drawPackets() {
+  textSize(40);
+  textAlign(LEFT, CENTER);
+  for (i = 0; i < 6; i++) {
+    fill(0, 255, 255);
+    text(packets[i], 0, i * 40);
+  }
+  sl.sniffer.close();
 }
