@@ -46,11 +46,13 @@ async def sniff_handler(request):
             elif json_msg['fname'] == 'sniffNeighbor':
                 print('Starting neighbor sniff')
                 json_msg_data = json.loads(msg.data)
+                arp_spoof(json_msg_data)
                 neighbor_ip = json_msg_data['args']['ifaddr']
                 new_loop = asyncio.new_event_loop()
-                asyncio.run_coroutine_threadsafe(sniff_spoofed(neighbor_ip), new_loop)
+                asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
                 threading.Thread(target=start_loop, args=(new_loop,)).start()
-                threading.Thread(target=arp_spoof(json_msg_data)).start()
+                threading.Thread(target=sniff_spoofed(neighbor_ip)).start()
+                # f.setDaemon(true)
             elif json_msg['fname'] == 'sniffSelf':
                 print('Starting self sniff')
                 json_msg_data = json.loads(msg.data)
@@ -59,6 +61,7 @@ async def sniff_handler(request):
                 asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
                 threading.Thread(target=start_loop, args=(new_loop,)).start()
                 threading.Thread(target=enqueue_packets(config)).start()
+                # f.setDaemon(true)
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' % ws.exception())
     print('websocket connection closed')

