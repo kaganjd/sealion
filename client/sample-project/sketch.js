@@ -1,19 +1,50 @@
 // Instantiate a SeaLion instance with hostname and port
 const hostname = "localhost";
 const port = 8080;
-const sl = new SeaLion(hostname, port);
+// const sl = new SeaLion(hostname, port);
 
 packets = [];
+// default IP address
+var IP2Sniff;
+var sl;
+var sniffXPosition;
 
 function setup() {
   createCanvas(400, 400);
-  background(0);
-  sl.sniffer.start("192.168.7.189");
+  background(120);
+
+  // sl.sniffer.start();
+
+  // field for inputting IP address
+  let IPField = createInput("type IP address to sniff");
+  IPField.position(10, height - 12);
+  IPField.input(writeIP);
+  // button to initiate sniffing
+  let sniffButton = createButton("Sniff");
+  sniffButton.position(10 + IPField.size().width, height - 12);
+  sniffButton.mousePressed(openSniff);
+  sniffXPosition = sniffButton.size().width;
 }
 
-sl.sniffer.listener.on("packet", function(data) {
-  packets.push(data);
-});
+function openSniff() {
+  sl = new SeaLion(hostname, port);
+  sl.sniffer.listener.on("packet", function(data) {
+    packets.push(data);
+  });
+  sl.sniffer.start(IP2Sniff);
+  let closeButton = createButton("Stop");
+  closeButton.position(sniffXPosition + 10, height - 12);
+  closeButton.mousePressed(cleanUpSniffer);
+}
+
+function writeIP() {
+  IP2Sniff = this.value();
+}
+
+function cleanUpSniffer() {
+  sl.sniffer.stop();
+  sl.mainSocket.close();
+}
 
 function draw() {
   if (packets.length === 5) {
@@ -22,11 +53,10 @@ function draw() {
 }
 
 function drawPackets() {
-  textSize(40);
+  textSize(14);
   textAlign(LEFT, CENTER);
-  for (i = 0; i < 6; i++) {
+  for (i = 0; i < 20; i++) {
     fill(0, 255, 255);
-    text(packets[i], 0, i * 40);
+    text(packets[i], 0, i * 40 + 30);
   }
-  sl.sniffer.close();
 }

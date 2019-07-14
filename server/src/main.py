@@ -2,6 +2,8 @@ from aiohttp import web
 from routes import setup_routes
 import subprocess
 import config
+import os
+import signal
 
 def run_cmds(*cmds):
   for index, cmd in enumerate(cmds):
@@ -41,8 +43,9 @@ app = web.Application()
 try:
   setup_routes(app)
   web.run_app(app)
-# TODO: This does not kill the server
+# This does not kill the server while the websockets are active
 except KeyboardInterrupt:
   print('Restoring default permissions...')
   restore_permissions()
-  sys.exit(0)
+  # close server via the process ID
+  os.kill(os.getpid(), signal.SIGINT)
