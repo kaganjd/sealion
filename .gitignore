@@ -6,4 +6,6 @@ node_modules/
 */sample-project/p5.min.js
 .coverage
 
+*.swp
+.vscode/
 website/build
