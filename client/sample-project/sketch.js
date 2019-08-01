@@ -12,7 +12,7 @@ var sniffXPosition;
 function setup() {
   createCanvas(400, 400);
   background(120);
-
+  sl = new SeaLion(hostname, port);
   // sl.sniffer.start();
 
   // field for inputting IP address
@@ -27,11 +27,11 @@ function setup() {
 }
 
 function openSniff() {
-  sl = new SeaLion(hostname, port);
+  sl.initSniffer(IP2Sniff);
   sl.sniffer.listener.on("packet", function(data) {
     packets.push(data);
   });
-  sl.sniffer.start(IP2Sniff);
+
   let closeButton = createButton("Stop");
   closeButton.position(sniffXPosition + 10, height - 12);
   closeButton.mousePressed(cleanUpSniffer);
@@ -41,12 +41,12 @@ function writeIP() {
   IP2Sniff = this.value();
 }
 
-function cleanUpSniffer() {
-  sl.sniffer.stop();
-  sl.mainSocket.close();
+function cleanSniff() {
+  sl.clear();
 }
 
 function draw() {
+  console.log(packets);
   if (packets.length === 5) {
     drawPackets();
   }
