@@ -4,11 +4,23 @@ class SeaLion {
   constructor(hostname, port) {
     this.wsSniff = `ws://${hostname}:${port}/sniff`;
     this.wsMain = `ws://${hostname}:${port}/main`;
-    this.sniffer = new Sniffer(this.wsSniff);
+    this.sniffer = "";
     this.mainSocket = new WebSocket(this.wsMain);
     this.arpTable = "";
     this.networkInfo = "";
     this.packetList = "";
+  }
+
+  initSniffer(ip = false) {
+    this.sniffer = new Sniffer(this.wsSniff);
+    this.sniffer.start(ip);
+  }
+
+  clear() {
+    this.mainSocket.close();
+    if (this.sniffer) {
+      this.sniffer.close();
+    }
   }
 
   // TODO: Move to a utils file
