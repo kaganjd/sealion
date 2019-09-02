@@ -43,20 +43,6 @@ def get_interface():
         w = win_iface()
         return w
 
-def get_sniffer_config(config_from_client):
-    default_config = {
-        "count": 0,
-        "filter": "",
-        "iface": conf.iface,
-        "lfilter": "",
-        "store": 0
-    }
-    new_config = config_from_client
-    for key in default_config:
-        update_config(key, default_config, new_config)
-    updated_config = default_config
-    return updated_config
-
 def restore_network(gateway_ip, gateway_mac, neighbor_ip, neighbor_mac):
     send(ARP(op=2, hwdst="ff:ff:ff:ff:ff:ff", pdst=gateway_ip, hwsrc=target_mac, psrc=target_ip), count=5)
     send(ARP(op=2, hwdst="ff:ff:ff:ff:ff:ff", pdst=target_ip, hwsrc=gateway_mac, psrc=gateway_ip), count=5)
@@ -70,9 +56,7 @@ def get_mac(ip_address):
         return r.hwsrc
     return None
 
-def arp_spoof(config_from_client):
-    # json_config = json.loads(config_from_client)
-    neighbor_ip = config_from_client['args']['ifaddr']
+def arp_spoof(neighbor_ip):
     network_info = get_interface()
     gateway_ip = network_info['gw']
     neighbor_mac = get_mac(neighbor_ip)
@@ -92,35 +76,27 @@ def arp_spoof(config_from_client):
     except KeyboardInterrupt:
         print("[*] Stopped ARP poison attack. Restoring network")
 
-def sniff_spoofed(neighbor_ip):
-    sniff_filter = 'ip host {}'.format(neighbor_ip)
-    
+def enqueue_packets(fname, neighbor_ip=False):
     def summarize(x):
         pkt_summary = x.summary()
         packet_queue.put(pkt_summary)
 
-    sniff(prn=lambda x: summarize(x), filter=sniff_filter, iface=conf.iface)
+    config_defaults = {
+        "prn": lambda x: summarize(x),
+        "iface": conf.iface,
+        "count": 0,
+        "store": 0
+    }
 
-def update_config(key, default_config, new_config):
-    try:
-        if new_config.get(key) and new_config.get(key) != '':
-            print('Updating "%s" in default_config' % key)
-            new_val = new_config.get(key)
-            default_config.update({key: new_val})
-    # Not actually sure this error is possible anymore, but can be a placeholder depending on how we structure the config on the client side
-    except AttributeError:
-        print('No key "%s" in the args dict that was passed; using the default value' % key)
+    if fname == 'sniffSelf':
+      sniff(**config_defaults)
+    elif fname == 'sniffNeighbor':
+      sniff(**config_defaults, filter='ip host {}'.format(neighbor_ip))
 
 # from https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
 def start_loop(loop):
     asyncio.set_event_loop(loop)
     loop.run_forever()
-
-def enqueue_packets(config):
-    def summarize(x):
-        pkt_summary = x.summary()
-        packet_queue.put(pkt_summary)
-    sniff(**config, prn=lambda x: summarize(x))
 
 async def dequeue_packets(ws):
     while True:

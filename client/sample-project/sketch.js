@@ -46,7 +46,6 @@ function cleanSniff() {
 }
 
 function draw() {
-  console.log(packets);
   if (packets.length === 5) {
     drawPackets();
   }

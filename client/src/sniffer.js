@@ -10,16 +10,12 @@ class Sniffer extends WebSocket {
 
   start(ip = false) {
     const sniffSelfConfig = {
-      fname: "sniffSelf",
-      args: {
-        count: 5
-      }
+      fname: "sniffSelf"
     };
 
     const sniffOtherConfig = {
       fname: "sniffNeighbor",
       args: {
-        count: 3,
         ifaddr: ip
       }
     };

@@ -5,7 +5,7 @@ from scapy.all import *
 import threading
 import asyncio
 import utils
-from utils import get_interface, get_sniffer_config, start_loop, enqueue_packets, dequeue_packets, get_arp_table, arp_spoof, sniff_spoofed
+from utils import get_interface, start_loop, enqueue_packets, dequeue_packets, get_arp_table, arp_spoof
 
 utils.init()
 
@@ -46,21 +46,19 @@ async def sniff_handler(request):
             elif json_msg['fname'] == 'sniffNeighbor':
                 print('Starting neighbor sniff')
                 json_msg_data = json.loads(msg.data)
-                arp_spoof(json_msg_data)
                 neighbor_ip = json_msg_data['args']['ifaddr']
+                arp_spoof(neighbor_ip)
                 new_loop = asyncio.new_event_loop()
                 asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
                 threading.Thread(target=start_loop, args=(new_loop,)).start()
-                threading.Thread(target=sniff_spoofed(neighbor_ip)).start()
+                threading.Thread(target=enqueue_packets(json_msg['fname'], neighbor_ip)).start()
                 # f.setDaemon(true)
             elif json_msg['fname'] == 'sniffSelf':
                 print('Starting self sniff')
-                json_msg_data = json.loads(msg.data)
-                config = get_sniffer_config(json_msg_data['args'])
                 new_loop = asyncio.new_event_loop()
                 asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
                 threading.Thread(target=start_loop, args=(new_loop,)).start()
-                threading.Thread(target=enqueue_packets(config)).start()
+                threading.Thread(target=enqueue_packets(json_msg['fname'])).start()
                 # f.setDaemon(true)
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' % ws.exception())
