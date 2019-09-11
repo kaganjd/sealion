@@ -12,18 +12,19 @@ def run_cmds(*cmds):
         cmd_name, exitcode, err = cmds[index], e.returncode, e.output
         print("ERROR RUNNING: '{}' OUTPUT: {}".format(cmd_name, out))
 
-# def check_permissions():
-#   # TODO: check for other operating systems
-#   ls_permissions = config.OSX_LS_BPF_PERMISSIONS
-#   permissions = subprocess.run(ls_permissions, shell=True, check=True, stdout=subprocess.PIPE)
-#   permissions_str = permissions.stdout.decode()
-#   if config.OSX_BPF_PERMISSIONS in permissions_str:
-#     try:
-#       set_permissions()
-#     except:
-#       print('Set_permissions failed')
-#   else:
-#     print('Permissions already set')
+def check_permissions():
+  # TODO: check for other operating systems
+  print('Checking permissions...')
+  ls_permissions = config.OSX_LS_BPF_PERMISSIONS
+  permissions = subprocess.run(ls_permissions, shell=True, check=True, stdout=subprocess.PIPE)
+  permissions_str = permissions.stdout.decode()
+  if config.OSX_BPF_PERMISSIONS in permissions_str:
+    try:
+      set_permissions()
+    except:
+      print('Setting permissions failed')
+  else:
+    print('Permissions already set')
 
 def set_permissions():
   print('Setting permissions, you may need to enter your password...')
@@ -42,8 +43,7 @@ def restore_permissions():
   print('Permissions restored')
 
 
-# check_permissions()
-set_permissions()
+check_permissions()
 app = web.Application()
 setup_routes(app)
 web.run_app(app)

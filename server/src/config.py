@@ -6,5 +6,5 @@ OSX_ENABLE_FWD = 'sudo sysctl net.inet.ip.forwarding=1'
 OSX_DISABLE_FWD = 'sudo sysctl net.inet.ip.forwarding=0'
 OSX_ENABLE_FIREWALL = 'pfctl -e'
 OSX_DISABLE_FIREWALL = 'pfctl -d'
-OSX_BPF_PERMISSIONS = 'crw-rw-r--'
+OSX_BPF_PERMISSIONS = 'crw-rw----'
 
