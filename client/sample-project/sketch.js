@@ -23,7 +23,7 @@ function setup() {
   let sniffButton = createButton("Sniff");
   sniffButton.position(10 + IPField.size().width, height - 12);
   sniffButton.mousePressed(openSniff);
-  sniffXPosition = sniffButton.size().width;
+  sniffXPosition = sniffButton.size().width + 10 + IPField.size().width;
 }
 
 function openSniff() {
@@ -46,7 +46,7 @@ function cleanSniff() {
 }
 
 function draw() {
-  if (packets.length === 5) {
+  if (packets.length > 5) {
     drawPackets();
   }
 }
