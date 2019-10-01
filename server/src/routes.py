@@ -1,3 +1,4 @@
+from SLSession import SLSession
 import aiohttp
 import json
 from aiohttp import web
@@ -5,9 +6,7 @@ from scapy.all import *
 import threading
 import asyncio
 import utils
-from utils import get_interface, start_loop, enqueue_packets, dequeue_packets, get_arp_table, arp_spoof
-
-utils.init()
+from utils import get_interface, start_loop, dequeue_packets, get_arp_table, arp_spoof
 
 def setup_routes(app):
     app.router.add_get('/sniff', sniff_handler),
@@ -16,8 +15,10 @@ def setup_routes(app):
 def call_sniff_threads(ws, fcn, ip=False):
   new_loop = asyncio.new_event_loop()
   asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
-  threading.Thread(target=start_loop, args=(new_loop,)).start()
-  threading.Thread(target=enqueue_packets(fcn, ip).start())
+  d = threading.Thread(target=start_loop, args=(new_loop,))
+  d.start()
+  t = AsyncSniffer(session=SLSession)
+  t.start()
 
 async def main_handler(request):
     ws = web.WebSocketResponse()
