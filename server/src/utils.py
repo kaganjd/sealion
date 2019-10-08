@@ -1,3 +1,5 @@
+from SLSession import SLSession
+from StoppableThread import DequeueThread
 import json
 from scapy.all import *
 import asyncio
@@ -74,33 +76,27 @@ def arp_spoof(neighbor_ip):
     except KeyboardInterrupt:
         print("[*] Stopped ARP poison attack. Restoring network")
 
-# def enqueue_packets(fname, neighbor_ip=False):
-#     def summarize(x):
-#         pkt_summary = x.summary()
-#         packet_queue.put(pkt_summary)
-
-#     config_defaults = {
-#         "prn": lambda x: summarize(x),
-#         "iface": conf.iface,
-#         "count": 0,
-#         "store": 0
-#     }
-
-#     if fname == 'sniffSelf':
-#       sniff(**config_defaults)
-#     elif fname == 'sniffNeighbor':
-#       sniff(**config_defaults, filter='ip host {}'.format(neighbor_ip))
-
 # from https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
 def start_loop(loop):
     asyncio.set_event_loop(loop)
     loop.run_forever()
 
 async def dequeue_packets(ws):
-    while True:
+    while not ws.closed:
         p = PktQueue.shared_queue.get()
-        if p:
-            await ws.send_str(p)
+        await ws.send_str(p)
+
+def dequeue_start(ws):
+    new_loop = asyncio.new_event_loop()
+    asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
+    d = DequeueThread(target=start_loop, args=(new_loop,))
+    d.start()
+
+def call_sniff_threads(ws, fname, ip=False):
+    if fname == 'sniffSelf':
+        AsyncSniffer(session=SLSession).start()
+    elif fname == 'sniffNeighbor':
+        AsyncSniffer(session=SLSession, filter='ip host {}'.format(ip)).start()
 
 def validate_ifaddr(ifaddr):
     try:
