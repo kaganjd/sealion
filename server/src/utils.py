@@ -81,18 +81,21 @@ def start_loop(loop):
     asyncio.set_event_loop(loop)
     loop.run_forever()
 
-async def dequeue_packets(ws):
-    while not ws.closed:
+async def send_dequeue_packets(ws):
+    while True:
         p = PktQueue.shared_queue.get()
         await ws.send_str(p)
+        if ws.closed:
+            threading.current_thread().stop()
+            break
 
-def dequeue_start(ws):
+def start_dequeue_thread(ws):
     new_loop = asyncio.new_event_loop()
-    asyncio.run_coroutine_threadsafe(dequeue_packets(ws), new_loop)
+    asyncio.run_coroutine_threadsafe(send_dequeue_packets(ws), new_loop)
     d = DequeueThread(target=start_loop, args=(new_loop,))
     d.start()
 
-def call_sniff_threads(ws, fname, ip=False):
+def start_sniff_thread(ws, fname, ip=False):
     if fname == 'sniffSelf':
         AsyncSniffer(session=SLSession).start()
     elif fname == 'sniffNeighbor':

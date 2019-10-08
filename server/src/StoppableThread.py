@@ -8,6 +8,7 @@ class DequeueThread(threading.Thread):
       self._stop_event = threading.Event()
 
     def stop(self, *args, **kwargs):
+      print('Stopping dequeue thread')
       self._stop_event.set()
 
     def stopped(self, *args, **kwargs):
