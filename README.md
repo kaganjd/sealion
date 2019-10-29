@@ -17,11 +17,11 @@ For first-time setup with virtualenv:
 3. `$ source venv/bin/activate` to activate the virtualenv
 4. `$ pip install -r requirements.txt` to install Python dependencies
 
-Then either start server with GUI:
+Then either start the server with a GUI control panel:
 
 5. `$ python src/gui.py`
 
-Or start server without GUI:
+Or start the server without a GUI:
 
 5. `$ python src/main.py` starts a server on port 8080
 
@@ -72,11 +72,6 @@ Uses pytest
 - `$ pytest --cov=src` from `server/` creates a coverage report
 - add tests to `server/tests/` directory with the naming convention `test_*.py`
 
-## Server GUI troubleshooting
+## GUI development troubleshooting
 
 To run the server GUI you will need [Tk/Tcl](http://www.tcl.tk/) in your virtual environment. Tk/Tcl is bundled with most installations of Python, and if it was bundled with yours then it should be already present in your virtual environment. If it was not automatically added to your virtual environment, try reinstalling your virtual environment in the server folder via `$ virtualenv --system-site-packages venv` and then rerunning steps 3-5 in the server setup guide above.
-
-If you find that your installation of Python doesn't come with Tk/Tcl, it is possible to install it globally via your package manager of choice, and then create a symbolic link to that installation.
-
-1. `cd ~/venv/lib/python3.X`
-2. `ln -s /path/to/global/python/installation/python3/3.X.X/Frameworks/Python.framework/Versions/3.X/lib/python3.X/tkinter tkinter`

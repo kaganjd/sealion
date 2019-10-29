@@ -10,14 +10,14 @@ import asyncio
 def server_start():
     client.has_server_started = 1
     admin_key = tkinter.simpledialog.askstring("Password", "Permissions must be set, please enter administrator password:", show='*')
-    check_permissions(admin_key)
+    GUI_check_permissions(admin_key)
     client.running = 1
     client.thread1.start()
 
 def quit_system():
     if client.has_server_started:
         admin_key = tkinter.simpledialog.askstring("Password", "Permissions must be returned to normal, please enter administrator password:", show='*')
-        restore_permissions(admin_key)
+        GUI_restore_permissions(admin_key)
         os.kill(os.getpid(),signal.SIGKILL)
     else:
         import sys
@@ -60,25 +60,6 @@ class GuiPart:
         b2=Button(window,text="Quit", width=12, command=quit_system)
         b2.grid(row=1, column=0)
 
-        # window.mainloop()
-
-
-        # Add more GUI stuff here depending on your specific needs
-
-    def processIncoming(self):
-        """Handle all messages currently in the queue, if any."""
-        while self.queue.qsize(  ):
-            try:
-                msg = self.queue.get(0)
-                # Check contents of message and do whatever is needed. As a
-                # simple test, print it (in real life, you would
-                # suitably update the GUI's display in a richer fashion).
-                print(msg)
-            except queue.Empty:
-                # just on general principles, although we don't
-                # expect this branch to be taken in this case
-                pass
-
 class ThreadedClient:
     """
     Launch the main part of the GUI and the worker thread. periodicCall and
@@ -104,24 +85,7 @@ class ThreadedClient:
         self.running = 0
         self.has_server_started = 0
         self.thread1 = threading.Thread(target=self.workerThread1)
-        # self.thread1.start(  )
-
-        # Start the periodic call in the GUI to check if the queue contains
-        # anything
-        self.periodicCall(  )
-
-    def periodicCall(self):
-        """
-        Check every 200 ms if there is something new in the queue.
-        """
-        self.gui.processIncoming(  )
-        # if not self.running:
-            # This is the brutal stop of the system. You may want to do
-            # some cleanup before actually shutting it down.
-            # import sys
-            # sys.exit(1)
-        self.master.after(200, self.periodicCall)
-
+ 
     def workerThread1(self):
         """
         This is where we handle the asynchronous I/O. For example, it may be
@@ -131,7 +95,6 @@ class ThreadedClient:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         app = web.Application()
-        # web.run_app(app)
         setup_routes(app)
         handler = app.make_handler()
         print("handler is set up")

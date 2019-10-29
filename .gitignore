@@ -9,3 +9,4 @@ node_modules/
 *.swp
 .vscode/
 website/build
+.DS_Store
