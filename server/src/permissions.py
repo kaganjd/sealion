@@ -13,66 +13,35 @@ def run_cmds(*cmds):
         cmd_name, exitcode, err = cmds[index], e.returncode, e.output
         print("ERROR RUNNING: '{}' OUTPUT: {}".format(cmd_name, out))
 
-def GUI_check_permissions(sudoPassword):
-  # TODO: check for other operating systems
+def check_permissions(*sudo_password):
   print('Checking permissions...')
   ls_permissions = config.OSX_LS_BPF_PERMISSIONS
   permissions = subprocess.run(ls_permissions, shell=True, check=True, stdout=subprocess.PIPE)
   permissions_str = permissions.stdout.decode()
   if config.OSX_BPF_PERMISSIONS in permissions_str:
-    try:
-      set_permissions(sudoPassword)
-    except:
-      print('Setting permissions failed')
+    if sudo_password:
+        set_permissions(sudo_password[0])
+    else:
+        set_permissions()
   else:
     print('Permissions already set')
 
-def GUI_set_permissions(sudoPassword):
+def set_permissions(*sudo_password):
   print('Setting permissions, you may need to enter your password...')
   add_permissions = config.OSX_ADD_BPF_PERMISSIONS
-  p = os.system('echo %s|sudo -S %s' % (sudoPassword, add_permissions))
-  enable_forwarding = config.OSX_ENABLE_FWD
-  # enable_firewall = config.OSX_ENABLE_FIREWALL
-  run_cmds(enable_forwarding)
-  print('Permissions set')
-
-def GUI_restore_permissions(sudoPassword):
-  print(' Restoring to default permissions...')
-  subtract_permissions = config.OSX_SUBTR_BPF_PERMISSIONS
-  p = os.system('echo %s|sudo -S %s' % (sudoPassword, subtract_permissions))
-  disable_forwarding = config.OSX_DISABLE_FWD
-  # disable_firewall = config.OSX_DISABLE_FIREWALL
-  run_cmds(subtract_permissions, disable_forwarding)
-  print('Permissions restored')
-
-
-def check_permissions():
-  # TODO: check for other operating systems
-  print('Checking permissions...')
-  ls_permissions = config.OSX_LS_BPF_PERMISSIONS
-  permissions = subprocess.run(ls_permissions, shell=True, check=True, stdout=subprocess.PIPE)
-  permissions_str = permissions.stdout.decode()
-  if config.OSX_BPF_PERMISSIONS in permissions_str:
-    try:
-      set_permissions()
-    except:
-      print('Setting permissions failed')
-  else:
-    print('Permissions already set')
-
-def set_permissions():
-  print('Setting permissions, you may need to enter your password...')
-  add_permissions = config.OSX_ADD_BPF_PERMISSIONS
+  if sudo_password:
+    p = os.system('echo %s|sudo -S %s' % (sudo_password[0], add_permissions))
   enable_forwarding = config.OSX_ENABLE_FWD
   # enable_firewall = config.OSX_ENABLE_FIREWALL
   run_cmds(add_permissions, enable_forwarding)
   print('Permissions set')
 
-def restore_permissions():
-  print(' Restoring to default permissions...')
+def restore_permissions(*sudo_password):
+  print('Restoring to default permissions...')
   subtract_permissions = config.OSX_SUBTR_BPF_PERMISSIONS
+  if sudo_password:
+    p = os.system('echo %s|sudo -S %s' % (sudo_password[0], subtract_permissions))
   disable_forwarding = config.OSX_DISABLE_FWD
   # disable_firewall = config.OSX_DISABLE_FIREWALL
   run_cmds(subtract_permissions, disable_forwarding)
   print('Permissions restored')
-
