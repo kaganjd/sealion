@@ -13,7 +13,6 @@ function setup() {
   createCanvas(400, 400);
   background(120);
   sl = new SeaLion(hostname, port);
-  // sl.sniffer.start();
 
   // field for inputting IP address
   let IPField = createInput("type IP address to sniff");
