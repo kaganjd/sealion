@@ -1,7 +1,5 @@
 from aiohttp import web
-from routes import setup_routes
 import subprocess
-import signal
 import os
 
 # Commands for OSX
@@ -24,10 +22,10 @@ def run_cmds(*cmds):
 
 def check_permissions(*sudo_password):
     print('Checking permissions...')
-    ls_permissions = config.OSX_LS_BPF_PERMISSIONS
+    ls_permissions = OSX_LS_BPF_PERMISSIONS
     permissions = subprocess.run(ls_permissions, shell=True, check=True, stdout=subprocess.PIPE)
     permissions_str = permissions.stdout.decode()
-    if config.OSX_BPF_PERMISSIONS in permissions_str:
+    if OSX_BPF_PERMISSIONS in permissions_str:
         if sudo_password:
             set_permissions(sudo_password[0])
         else:
@@ -37,20 +35,20 @@ def check_permissions(*sudo_password):
 
 def set_permissions(*sudo_password):
     print('Setting permissions, you may need to enter your password...')
-    add_permissions = config.OSX_ADD_BPF_PERMISSIONS
+    add_permissions = OSX_ADD_BPF_PERMISSIONS
     if sudo_password:
         p = os.system('echo %s|sudo -S %s' % (sudo_password[0], add_permissions))
-    enable_forwarding = config.OSX_ENABLE_FWD
-    # enable_firewall = config.OSX_ENABLE_FIREWALL
+    enable_forwarding = OSX_ENABLE_FWD
+    # enable_firewall = OSX_ENABLE_FIREWALL
     run_cmds(add_permissions, enable_forwarding)
     print('Permissions set')
 
 def restore_permissions(*sudo_password):
     print('Restoring to default permissions...')
-    subtract_permissions = config.OSX_SUBTR_BPF_PERMISSIONS
+    subtract_permissions = OSX_SUBTR_BPF_PERMISSIONS
     if sudo_password:
         p = os.system('echo %s|sudo -S %s' % (sudo_password[0], subtract_permissions))
-    disable_forwarding = config.OSX_DISABLE_FWD
-    # disable_firewall = config.OSX_DISABLE_FIREWALL
+    disable_forwarding = OSX_DISABLE_FWD
+    # disable_firewall = OSX_DISABLE_FIREWALL
     run_cmds(subtract_permissions, disable_forwarding)
     print('Permissions restored')
