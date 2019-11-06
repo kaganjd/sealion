@@ -4,25 +4,28 @@ from aiohttp import web
 from routes import setup_routes
 
 # GUI
+import subprocess
 import os
 import signal
 import threading
-import tkinter.simpledialog
 import asyncio
-from tkinter import *
+import tkinter as tk
+from tkinter import simpledialog
+import queue
+import time
+import random
 
-def server_start():
-    admin_key = tkinter.simpledialog.askstring("Password", "Permissions must be set, please enter administrator password:", show='*')
+def start_server():
+    admin_key = tk.simpledialog.askstring("Password", "Permissions must be set, please enter administrator password:", show='*')
     check_permissions(admin_key)
     new_server.server_init()
 
 def quit_system():
-    if _Server.has_started:
-        admin_key = tkinter.simpledialog.askstring("Password", "Permissions must be returned to normal, please enter administrator password:", show='*')
+    if new_server.is_running:
+        admin_key = tk.simpledialog.askstring("Password", "Permissions must be returned to normal, please enter administrator password:", show='*')
         restore_permissions(admin_key)
         os.kill(os.getpid(),signal.SIGKILL)
     else:
-        import sys
         sys.exit(1)
 
 logo='''
@@ -45,33 +48,59 @@ logo='''
                                            ""$
 '''    
 
-class GUI:
-    def __init__(self, master):
+class Gui:
+    def __init__(self, master, queue):
+        # self.queue = queue
+
         # Logo widget
-        T = Text(window, height=20, width=60)
+        T = tk.Text(window, height=20, width=60)
         T.grid(row=0, column=0, columnspan=6)
         T.configure(background="blue", foreground="yellow")
-        T.insert(END,logo)
+        T.insert(tk.END,logo)
 
-        b1=Button(window,text="Start Server", width=12, command=server_start)
+        b1=tk.Button(window, text="Start Server", width=12, command=start_server)
         b1.grid(row=2, column=0)
-        b2=Button(window,text="Quit", width=12, command=quit_system)
+        b2=tk.Button(window, text="Quit", width=12, command=quit_system)
         b2.grid(row=1, column=0)
 
-class _Server:
-    def __init__(self, runner):
-        self.has_started = False
-        self.runner = runner
+    # def process_incoming(self):
+    #     while self.queue.qsize():
+    #         try:
+    #             msg = self.queue.get(0)
+    #             l = tk.Text(window, height=12, width=12)
+    #             l.grid(row=3, column=0, columnspan=1)
+    #             l.configure(background="blue", foreground="yellow")
+    #             l.insert(tk.END, msg)
+    #         except queue.Empty:
+    #             pass
 
-    def toggle(self):
-        type(self).has_started = True
+class ThreadedServer:
+    def __init__(self, runner, master):
+        self.runner = runner
+        self.master = master
+        self.is_running = False
+        self.queue = queue.Queue()
+        # self.queue_thread = threading.Thread(target=self.worker_thread)
+        # self.queue_thread.start()
+        # self.check_queue()
+        self.gui = Gui(self.master, self.queue)
+
+    # def check_queue(self):
+    #     self.gui.process_incoming()
+    #     self.master.after(20, self.check_queue)
+
+    # def worker_thread(self):
+    #     while self.is_running:
+    #         time.sleep(10)
+    #         msg = random.random()
+    #         self.queue.put(msg)
 
     def start_loop(self, loop):
         asyncio.set_event_loop(loop)
         loop.run_forever()
 
     def server_init(self):
-        self.toggle()
+        self.is_running = not self.is_running
         new_loop = asyncio.new_event_loop()
         asyncio.run_coroutine_threadsafe(self.async_server(), new_loop)
         threading.Thread(target=self.start_loop, args=(new_loop,)).start()
@@ -84,21 +113,22 @@ class _Server:
         print("Site is set up")
 
 if __name__ == '__main__':
-    if sys.argv[1] == '--gui':
-        app = web.Application()
-        setup_routes(app)
-        runner = web.AppRunner(app)
-        new_server = _Server(runner)
-  
-        window = Tk()
-        window.title("SeaLion Sniffer Server")
-        main_ui = GUI(window)
-        window.mainloop()
-    elif sys.argv[1] == '--cli':
-        check_permissions()
-        app = web.Application()
-        setup_routes(app)
-        web.run_app(app)
-        restore_permissions()
-    else: 
-        echo('Set the --gui or --cli flag')
+    try:
+        if sys.argv[1] == '--gui':
+            app = web.Application()
+            setup_routes(app)
+            runner = web.AppRunner(app)
+            window = tk.Tk()
+            window.title("SeaLion Sniffer Server")
+            new_server = ThreadedServer(runner, window)
+            window.mainloop()
+        elif sys.argv[1] == '--cli':
+            check_permissions()
+            app = web.Application()
+            setup_routes(app)
+            web.run_app(app)
+            restore_permissions()
+        else:
+            print('Try again with either the "--gui" or "--cli" flag')
+    except IndexError as e:
+        print('Try again with either the "--gui" or "--cli" flag')
