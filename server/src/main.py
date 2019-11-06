@@ -1,7 +1,7 @@
 import sys
+import permissions
 from aiohttp import web
 from routes import setup_routes
-from permissions import *
 
 # GUI
 import threading
@@ -12,13 +12,13 @@ import asyncio
 
 def server_start():
     admin_key = tkinter.simpledialog.askstring("Password", "Permissions must be set, please enter administrator password:", show='*')
-    check_permissions(admin_key)
+    permissions.check_permissions(admin_key)
     new_server.server_init()
 
 def quit_system():
     if _Server.has_started:
         admin_key = tkinter.simpledialog.askstring("Password", "Permissions must be returned to normal, please enter administrator password:", show='*')
-        restore_permissions(admin_key)
+        permissions.restore_permissions(admin_key)
         os.kill(os.getpid(),signal.SIGKILL)
     else:
         import sys
@@ -84,20 +84,20 @@ class _Server:
 
 if __name__ == '__main__':
     if sys.argv[1] == '--gui':
-      app = web.Application()
-      setup_routes(app)
-      runner = web.AppRunner(app)
-      new_server = _Server(runner)
-
-      window = Tk()
-      window.title("SeaLion Sniffer Server")
-      main_ui = GUI(window)
-      window.mainloop()
+        app = web.Application()
+        setup_routes(app)
+        runner = web.AppRunner(app)
+        new_server = _Server(runner)
+  
+        window = Tk()
+        window.title("SeaLion Sniffer Server")
+        main_ui = GUI(window)
+        window.mainloop()
     elif sys.argv[1] == '--cli':
-      check_permissions()
-      app = web.Application()
-      setup_routes(app)
-      web.run_app(app)
-      restore_permissions()
+        permissions.check_permissions()
+        app = web.Application()
+        setup_routes(app)
+        web.run_app(app)
+        permissions.restore_permissions()
     else: 
-      echo('Set the --gui or --cli flag')
+        echo('Set the --gui or --cli flag')
