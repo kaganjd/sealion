@@ -25,6 +25,7 @@ class Sniffer extends WebSocket {
         ? this.send(JSON.stringify(sniffSelfConfig))
         : this.send(JSON.stringify(sniffOtherConfig));
     };
+
     this.onmessage = event => {
       console.log(event.data);
       this.listener.emit("packet", event.data);

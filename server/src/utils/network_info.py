@@ -2,16 +2,13 @@ import json
 from scapy.all import *
 import asyncio
 from urllib.parse import parse_qs, urlparse
-# ARP spoofing functions from From Justin Sietz https://nostarch.com/blackhatpython
+
+# ARP spoofing functions from Justin Sietz https://nostarch.com/blackhatpython
 import os
 import signal
 import threading
 import time
 import platform
-
-def init():
-    global packet_queue
-    packet_queue = Queue(maxsize=50)
 
 def darwin_iface():
     a = read_routes()
@@ -75,34 +72,6 @@ def arp_spoof(neighbor_ip):
             break
     except KeyboardInterrupt:
         print("[*] Stopped ARP poison attack. Restoring network")
-
-def enqueue_packets(fname, neighbor_ip=False):
-    def summarize(x):
-        pkt_summary = x.summary()
-        packet_queue.put(pkt_summary)
-
-    config_defaults = {
-        "prn": lambda x: summarize(x),
-        "iface": conf.iface,
-        "count": 0,
-        "store": 0
-    }
-
-    if fname == 'sniffSelf':
-      sniff(**config_defaults)
-    elif fname == 'sniffNeighbor':
-      sniff(**config_defaults, filter='ip host {}'.format(neighbor_ip))
-
-# from https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
-def start_loop(loop):
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
-
-async def dequeue_packets(ws):
-    while True:
-        pkt_summary = packet_queue.get()
-        if pkt_summary:
-            await ws.send_str(pkt_summary)
 
 def validate_ifaddr(ifaddr):
     try:

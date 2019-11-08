@@ -2,17 +2,18 @@ import Sniffer from "./sniffer";
 
 class SeaLion {
   constructor(hostname, port) {
-    this.wsSniff = `ws://${hostname}:${port}/sniff`;
-    this.wsMain = `ws://${hostname}:${port}/main`;
+    this.baseUrl = `ws://${hostname}:${port}`;
+    this.mainEndpoint = "/main";
+    this.sniffEndpoint = "/sniff";
     this.sniffer = "";
-    this.mainSocket = new WebSocket(this.wsMain);
+    this.mainSocket = new WebSocket(`${this.baseUrl}${this.mainEndpoint}`);
     this.arpTable = "";
     this.networkInfo = "";
     this.packetList = "";
   }
 
   initSniffer(ip = false) {
-    this.sniffer = new Sniffer(this.wsSniff);
+    this.sniffer = new Sniffer(`${this.baseUrl}${this.sniffEndpoint}`);
     this.sniffer.start(ip);
   }
 
