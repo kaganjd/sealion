@@ -47,22 +47,7 @@ From `client/`:
 
 ## Docs
 
-- `docs/` are the source files for the documentation site; make changes to these files and then build them from `website/` with the scripts below
-
-From `website/`:
-
-- `$ npm run start` opens your default browser to a local server on port 3000 so you can see your changes
-- `$ npm run build` builds the docs site when everything looks good
-- to publish the latest build to gh-pages branch (requires push access to the repo):
-
-```
-$ GIT_USER=<GIT_USER> \
-  CURRENT_BRANCH=master \
-  USE_SSH=true \
-  npm run publish-gh-pages
-```
-
-- the documentation site was built with [Docusaurus](https://docusaurus.io)
+See [docs-specific README](./metadocs/README_docs.md)
 
 ## Tests
 
@@ -72,7 +57,7 @@ Uses pytest
 - `$ pytest --cov=src` from `server/` creates a coverage report
 - add tests to `server/tests/` directory with the naming convention `test_*.py`
 
-## GUI troubleshooting
+# GUI troubleshooting
 
 To run the server GUI, you will need [Tk/Tcl](http://www.tcl.tk/) in your virtual environment. Tk/Tcl is bundled with most installations of Python, but if it was not automatically added to your virtual environment, then try reinstalling your virtual environment:
 
