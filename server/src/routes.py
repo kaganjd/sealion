@@ -4,8 +4,8 @@ from aiohttp import web
 from scapy.all import *
 import threading
 import asyncio
-import utils
-from utils import get_interface, start_dequeue_thread, start_sniff_thread, get_arp_table, arp_spoof
+from utils.sniff_module import Sniffer
+from utils.network_info import get_interface, get_arp_table, arp_spoof
 
 def setup_routes(app):
     app.router.add_get('/sniff', sniff_handler),
@@ -50,12 +50,12 @@ async def sniff_handler(request):
                     print('Starting neighbor sniff')
                     neighbor_ip = json_msg['args']['ifaddr']
                     arp_spoof(neighbor_ip)
-                    start_sniff_thread(ws, json_msg['fname'], neighbor_ip)
-                    start_dequeue_thread(ws)
+                    s = Sniffer(ws, json_msg['fname'], neighbor_ip)
+                    s.start_sniff_threads()
                 elif json_msg['fname'] == 'sniffSelf':
                     print('Starting self sniff')
-                    start_sniff_thread(ws, json_msg['fname'])
-                    start_dequeue_thread(ws)
+                    s = Sniffer(ws, json_msg['fname'])
+                    s.start_sniff_threads()
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 print('ws connection closed with exception %s' % ws.exception())
     except Exception as e:

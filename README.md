@@ -19,11 +19,11 @@ For first-time setup with virtualenv:
 
 Then either start the server with a GUI control panel:
 
-5. `$ python src/gui.py`
+5. `$ python main.py --gui`
 
-Or start the server without a GUI:
+Or start the server with a CLI:
 
-5. `$ python src/main.py` starts a server on port 8080
+5. `$ python main.py --cli` starts a server on port 8080
 
 ## Client
 

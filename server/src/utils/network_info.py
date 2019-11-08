@@ -1,10 +1,7 @@
-from SLSession import SLSession
-from StoppableThread import DequeueThread
 import json
 from scapy.all import *
 import asyncio
 from urllib.parse import parse_qs, urlparse
-import PktQueue
 
 # ARP spoofing functions from Justin Sietz https://nostarch.com/blackhatpython
 import os
@@ -75,31 +72,6 @@ def arp_spoof(neighbor_ip):
             break
     except KeyboardInterrupt:
         print("[*] Stopped ARP poison attack. Restoring network")
-
-# from https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
-def start_loop(loop):
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
-
-async def send_dequeue_packets(ws):
-    while True:
-        p = PktQueue.shared_queue.get()
-        await ws.send_str(p)
-        if ws.closed:
-            threading.current_thread().stop()
-            break
-
-def start_dequeue_thread(ws):
-    new_loop = asyncio.new_event_loop()
-    asyncio.run_coroutine_threadsafe(send_dequeue_packets(ws), new_loop)
-    d = DequeueThread(target=start_loop, args=(new_loop,))
-    d.start()
-
-def start_sniff_thread(ws, fname, ip=False):
-    if fname == 'sniffSelf':
-        AsyncSniffer(session=SLSession).start()
-    elif fname == 'sniffNeighbor':
-        AsyncSniffer(session=SLSession, filter='ip host {}'.format(ip)).start()
 
 def validate_ifaddr(ifaddr):
     try:
