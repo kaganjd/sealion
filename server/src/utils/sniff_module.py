@@ -3,7 +3,9 @@ import queue
 import threading
 import asyncio
 
-# The queue proxy lets us initialize a queue once that is accessible by different objects https://stackoverflow.com/questions/48705408/sharing-a-queue-instance-between-different-modules
+# The queue proxy lets us initialize a queue once that is accessible by
+# different objects
+# More info: https://stackoverflow.com/questions/48705408/sharing-a-queue-instance-between-different-modules
 class QueueProxy(object):
     def __init__(self):
         self._queue = queue.Queue(maxsize=50)
@@ -15,7 +17,9 @@ class QueueProxy(object):
     def put(self, *args, **kw):
         return self._queue.put(*args, **kw)
 
-# This is an implementation of Scapy's custom Session class that puts packets into the shared queue as they are sniffed. More info: https://scapy.readthedocs.io/en/latest/usage.html#asynchronous-sniffing
+# This is an implementation of Scapy's custom Session class that puts
+# packets into the shared queue as they are sniffed.
+# More info: https://scapy.readthedocs.io/en/latest/usage.html#asynchronous-sniffing
 class EnqueueSession(DefaultSession):
     def __init__(self, *args, **kwargs):
         DefaultSession.__init__(self, *args, **kwargs)
@@ -24,8 +28,12 @@ class EnqueueSession(DefaultSession):
         shared_queue.put(pkt.summary())
         DefaultSession.on_packet_received(self, pkt)
 
-# This is an implementation of a stoppable thread, used in Sea Lion for dequeueing packets to send to the client. The threads needs to be stoppable so that when the websocket is closed from the client side, the dequeue thread can be properly killed, aside from the killing the websocket on the server side.
-# https://stackoverflow.com/questions/47912701/python-how-can-i-implement-a-stoppable-thread
+# This is an implementation of a stoppable thread, used in Sea Lion for
+# dequeueing packets to send to the client. The threads needs to be stoppable
+# so that when the websocket is closed from the client side, the dequeue
+# thread can be properly killed, aside from the killing the websocket
+# on the server side.
+# More info: https://stackoverflow.com/questions/47912701/python-how-can-i-implement-a-stoppable-thread
 class StoppableThread(threading.Thread):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,7 +46,9 @@ class StoppableThread(threading.Thread):
     def stopped(self, *args, **kwargs):
         return self._stop_event.is_set()
 
-# This is the Sniffer object that's instantiated with a websocket, function name, and optional target IP to sniff. The methods set up the threads for enqueueing and dequeueing packets from a shared queue.
+# This is the Sniffer object that's instantiated with a websocket, function
+# name, and optional target IP to sniff. The methods set up the threads for
+# enqueueing and dequeueing packets from a shared queue.
 class Sniffer(object):
     def __init__(self, ws, fname, ip=False):
         self.ws = ws
@@ -65,7 +75,9 @@ class Sniffer(object):
                 threading.current_thread().stop()
                 break
 
-    # This is a helper function that starts a forever loop for the dequeue function to run inside of. More info: https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
+    # This is a helper function that starts a forever loop for the dequeue
+    # function to run inside of.
+    # More info: https://hackernoon.com/threaded-asynchronous-magic-and-how-to-wield-it-bba9ed602c32
     def start_loop(self, loop):
         asyncio.set_event_loop(loop)
         loop.run_forever()
@@ -76,5 +88,7 @@ class Sniffer(object):
         d = StoppableThread(target=self.start_loop, args=(new_loop, ))
         d.start()
 
-# This the queue proxy that's shared between enqueue and dequeue functions. One function puts the packets in the queue; another function takes them out and sends them to the client.
+# This the queue proxy that's shared between enqueue and dequeue functions.
+# One function puts the packets in the queue; another function takes them
+# out and sends them to the client.
 shared_queue = QueueProxy()

@@ -15,11 +15,14 @@ import queue
 import time
 import random
 
+# Called on clicking the GUI "Start Server" button. It initializes a 
+# ThreadedServer.
 def start_server():
     admin_key = tk.simpledialog.askstring("Password", "Permissions must be set, please enter administrator password:", show='*')
     check_permissions(admin_key)
     new_server.server_init()
 
+# Called on clicking the GUI "Quit" button.
 def quit_system():
     if new_server.is_running:
         admin_key = tk.simpledialog.askstring("Password", "Permissions must be returned to normal, please enter administrator password:", show='*')
@@ -48,6 +51,11 @@ logo='''
                                            ""$
 '''    
 
+# Tkinter GUI setup. The "master" argument is required by Tkinter. The "queue"
+# argument is for passing messages from the server (error messages, print
+# statements) to be rendered in the GUI. The commented-out code in Gui and
+# ThreadedServer classes implements this message passing, but is commented out 
+# because it's not yet implemented throughout the server code.
 class Gui:
     def __init__(self, master, queue):
         # self.queue = queue
@@ -74,6 +82,8 @@ class Gui:
     #         except queue.Empty:
     #             pass
 
+# ThreadedServer class that runs AIOHTTP's async server in its own thread.
+# More info: https://aiohttp.readthedocs.io/en/stable/web_advanced.html#aiohttp-web-app-runners
 class ThreadedServer:
     def __init__(self, runner, master):
         self.runner = runner
@@ -112,6 +122,8 @@ class ThreadedServer:
         await site.start()
         print("Site is set up")
 
+# Main function that sets up the server with either a GUI or CLI. All
+# of the functions above are for the GUI.
 if __name__ == '__main__':
     try:
         if sys.argv[1] == '--gui':
@@ -119,7 +131,7 @@ if __name__ == '__main__':
             setup_routes(app)
             runner = web.AppRunner(app)
             window = tk.Tk()
-            window.title("SeaLion Sniffer Server")
+            window.title("Sea Lion Server")
             new_server = ThreadedServer(runner, window)
             window.mainloop()
         elif sys.argv[1] == '--cli':
