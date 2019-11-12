@@ -84,7 +84,7 @@ def subnet_from_ifaddr(ifaddr):
     four_octets = ifaddr.split('.')
     del four_octets[-1]
     three_octets = '.'.join(four_octets)
-    subnet = '{}{}'.format(three_octets, '.*')
+    subnet = '{}{}'.format(three_octets, '.0/24')
     return subnet
 
 def get_arp_table(ifaddr):

@@ -26,7 +26,8 @@ async def main_handler(request):
                     json_iface = json.dumps(get_interface())
                     await ws.send_str(json_iface)
                 elif json_msg['fname'] == 'arpScan':
-                    json_arp_table = json.dumps(get_arp_table(json_msg['args']['  ifaddr']))
+                    print('Getting arp table')
+                    json_arp_table = json.dumps(get_arp_table(json_msg['args']['ifaddr']))
                     await ws.send_str(json_arp_table)
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 print('ws connection closed with exception %s' % ws.exception())
