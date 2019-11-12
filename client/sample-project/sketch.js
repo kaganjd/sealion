@@ -23,6 +23,13 @@ function setup() {
   sniffButton.position(10 + IPField.size().width, height - 12);
   sniffButton.mousePressed(openSniff);
   sniffXPosition = sniffButton.size().width + 10 + IPField.size().width;
+  // button to get network info and draw the resulting ARP table
+  let getNetInfoButton = createButton("Get Net Info");
+  getNetInfoButton.position(
+    10 + sniffButton.width + IPField.width,
+    height - 12
+  );
+  getNetInfoButton.mousePressed(getInfo);
 }
 
 function openSniff() {
@@ -36,6 +43,10 @@ function openSniff() {
   closeButton.mousePressed(cleanSniff);
 }
 
+function getInfo() {
+  sl.getNetworkInfo().then(results => sl.arpScan(results.ifaddr));
+}
+
 function writeIP() {
   IP2Sniff = this.value();
 }
@@ -47,6 +58,20 @@ function cleanSniff() {
 function draw() {
   if (packets.length > 5) {
     drawPackets();
+  }
+  if (sl.arpTable) {
+    drawArpTable();
+  }
+}
+
+function drawArpTable() {
+  textSize(20);
+  textAlign(LEFT, TOP);
+  for (i = 0; i < sl.arpTable.length; i++) {
+    fill(0, 255, 255);
+    text(sl.arpTable[i]["mac"], 0, 40 * i);
+    fill(255, 0, 255);
+    text(sl.arpTable[i]["mac"], 2, 40 * i + 1);
   }
 }
 

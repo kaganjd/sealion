@@ -57,7 +57,7 @@ class SeaLion {
     const config = {
       fname: "getNetworkInfo"
     };
-    if (this.mainSocket.running === 1) {
+    if (this.mainSocket.readyState === 1) {
       this.mainSocket.send(JSON.stringify(config));
     }
     return new Promise((resolve, reject) => {
