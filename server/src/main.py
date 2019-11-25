@@ -1,7 +1,7 @@
 import sys
 from utils.permissions import check_permissions, restore_permissions 
 from aiohttp import web
-from routes import setup_routes
+from routes import setup_routes, MessageSingleton
 
 # GUI
 import subprocess
@@ -22,7 +22,7 @@ def start_server():
     check_permissions(admin_key)
     new_server.server_init()
 
-# Called on clicking the GUI "Quit" button.
+# Called on clicking the GUI "Quit" button. Kills program via OS call when server is running to guarantee it does not hang. 
 def quit_system():
     if new_server.is_running:
         admin_key = tk.simpledialog.askstring("Password", "Permissions must be returned to normal, please enter administrator password:", show='*')
@@ -50,6 +50,8 @@ logo='''
                                          "$$$         ""
                                            ""$
 '''    
+routes_message = MessageSingleton('')
+latest_message = ""
 
 # Tkinter GUI setup. The "master" argument is required by Tkinter. The "queue"
 # argument is for passing messages from the server (error messages, print
@@ -58,29 +60,34 @@ logo='''
 # because it's not yet implemented throughout the server code.
 class Gui:
     def __init__(self, master, queue):
-        # self.queue = queue
+        self.queue = queue
 
         # Logo widget
         T = tk.Text(window, height=20, width=60)
         T.grid(row=0, column=0, columnspan=6)
         T.configure(background="blue", foreground="yellow")
         T.insert(tk.END,logo)
-
+        # Buttons
         b1=tk.Button(window, text="Start Server", width=12, command=start_server)
         b1.grid(row=2, column=0)
         b2=tk.Button(window, text="Quit", width=12, command=quit_system)
         b2.grid(row=1, column=0)
+        # Info display
+        Info = tk.Text(window, width = 30, height=2)
+        Info.grid(row = 1, column =3)
+        Info.configure(background="white", foreground="red")
+        Info.insert(tk.END,latest_message)
 
-    # def process_incoming(self):
-    #     while self.queue.qsize():
-    #         try:
-    #             msg = self.queue.get(0)
-    #             l = tk.Text(window, height=12, width=12)
-    #             l.grid(row=3, column=0, columnspan=1)
-    #             l.configure(background="blue", foreground="yellow")
-    #             l.insert(tk.END, msg)
-    #         except queue.Empty:
-    #             pass
+    def process_incoming(self):
+        while self.queue.qsize():
+            try:
+                msg = self.queue.get(0)
+                Info = tk.Text(window, width = 30, height=2)
+                Info.grid(row = 1, column =3)
+                Info.configure(background="white", foreground="red")
+                Info.insert(tk.END,msg)
+            except queue.Empty:
+                pass
 
 # ThreadedServer class that runs AIOHTTP's async server in its own thread.
 # More info: https://aiohttp.readthedocs.io/en/stable/web_advanced.html#aiohttp-web-app-runners
@@ -92,22 +99,26 @@ class ThreadedServer:
         self.queue = queue.Queue()
         # self.queue_thread = threading.Thread(target=self.worker_thread)
         # self.queue_thread.start()
-        # self.check_queue()
         self.gui = Gui(self.master, self.queue)
+        self.check_queue()
 
-    # def check_queue(self):
-    #     self.gui.process_incoming()
-    #     self.master.after(20, self.check_queue)
+    def check_queue(self):
+        self.gui.process_incoming()
+        msg = routes_message.val
+        self.queue.put(msg)
+        self.master.after(40, self.check_queue)
 
     # def worker_thread(self):
     #     while self.is_running:
     #         time.sleep(10)
-    #         msg = random.random()
+    #         msg = routes_message.val
+    #         print(msg)
     #         self.queue.put(msg)
 
     def start_loop(self, loop):
         asyncio.set_event_loop(loop)
         loop.run_forever()
+
 
     def server_init(self):
         self.is_running = not self.is_running
@@ -121,6 +132,9 @@ class ThreadedServer:
         site = web.TCPSite(self.runner, 'localhost', 8080)
         await site.start()
         print("Site is set up")
+        msg = MessageSingleton("server is started, waiting for connection from client")
+        self.queue.put(msg.val)
+
 
 # Main function that sets up the server with either a GUI or CLI. All
 # of the functions above are for the GUI.
@@ -131,7 +145,7 @@ if __name__ == '__main__':
             setup_routes(app)
             runner = web.AppRunner(app)
             window = tk.Tk()
-            window.title("Sea Lion Server")
+            window.title("Sea Lion")
             new_server = ThreadedServer(runner, window)
             window.mainloop()
         elif sys.argv[1] == '--cli':
