@@ -21,13 +21,13 @@
         "title": "hostname Property",
         "sidebar_label": "hostname"
       },
+      "api-initsniffer": {
+        "title": "initSniffer Method",
+        "sidebar_label": "initSniffer"
+      },
       "api-networkinfo": {
         "title": "networkInfo Property",
         "sidebar_label": "networkInfo"
-      },
-      "api-open": {
-        "title": "open Method",
-        "sidebar_label": "open"
       },
       "api-port": {
         "title": "port Property",
