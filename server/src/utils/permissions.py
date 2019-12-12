@@ -4,8 +4,8 @@ import os
 
 # Commands for OSX
 OSX_LS_BPF_PERMISSIONS = 'ls -l /dev/bpf*'
-OSX_ADD_BPF_PERMISSIONS = 'sudo chmod o+r /dev/bpf*'
-OSX_SUBTR_BPF_PERMISSIONS = 'sudo chmod o-r /dev/bpf*'
+OSX_ADD_BPF_PERMISSIONS = 'chmod o+r /dev/bpf*'
+OSX_SUBTR_BPF_PERMISSIONS = 'chmod o-r /dev/bpf*'
 OSX_ENABLE_FWD = 'sudo sysctl net.inet.ip.forwarding=1'
 OSX_DISABLE_FWD = 'sudo sysctl net.inet.ip.forwarding=0'
 OSX_ENABLE_FIREWALL = 'pfctl -e'
@@ -38,6 +38,8 @@ def set_permissions(*sudo_password):
     add_permissions = OSX_ADD_BPF_PERMISSIONS
     if sudo_password:
         p = os.system('echo %s|sudo -S %s' % (sudo_password[0], add_permissions))
+    else:
+        add_permissions = 'sudo ' + add_permissions
     enable_forwarding = OSX_ENABLE_FWD
     # enable_firewall = OSX_ENABLE_FIREWALL
     run_cmds(add_permissions, enable_forwarding)
@@ -48,6 +50,8 @@ def restore_permissions(*sudo_password):
     subtract_permissions = OSX_SUBTR_BPF_PERMISSIONS
     if sudo_password:
         p = os.system('echo %s|sudo -S %s' % (sudo_password[0], subtract_permissions))
+    else:
+        subtract_permissions = 'sudo ' + subtract_permissions
     disable_forwarding = OSX_DISABLE_FWD
     # disable_firewall = OSX_DISABLE_FIREWALL
     run_cmds(subtract_permissions, disable_forwarding)

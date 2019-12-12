@@ -14,13 +14,18 @@ from tkinter import simpledialog
 import queue
 import time
 import random
+from utils.message_singleton import MessageSingleton
 
 # Called on clicking the GUI "Start Server" button. It initializes a 
 # ThreadedServer.
 def start_server():
     admin_key = tk.simpledialog.askstring("Password", "Permissions must be set, please enter administrator password:", show='*')
-    check_permissions(admin_key)
-    new_server.server_init()
+    try:
+        check_permissions(admin_key)
+        new_server.server_init()
+    except:
+        msg = MessageSingleton('Wrong password, try again.')
+    
 
 # Called on clicking the GUI "Quit" button. Kills program via OS call when server is running to guarantee it does not hang. 
 def quit_system():
@@ -51,7 +56,6 @@ logo='''
                                            ""$
 '''    
 routes_message = MessageSingleton('')
-latest_message = ""
 
 # Tkinter GUI setup. The "master" argument is required by Tkinter. The "queue"
 # argument is for passing messages from the server (error messages, print
@@ -76,7 +80,7 @@ class Gui:
         Info = tk.Text(window, width = 30, height=2)
         Info.grid(row = 1, column =3)
         Info.configure(background="white", foreground="red")
-        Info.insert(tk.END,latest_message)
+        Info.insert(tk.END,routes_message.val)
 
     def process_incoming(self):
         while self.queue.qsize():
@@ -106,7 +110,7 @@ class ThreadedServer:
         self.gui.process_incoming()
         msg = routes_message.val
         self.queue.put(msg)
-        self.master.after(40, self.check_queue)
+        self.master.after(300, self.check_queue)
 
     # def worker_thread(self):
     #     while self.is_running:
