@@ -2,6 +2,7 @@ import json
 from scapy.all import *
 import asyncio
 from urllib.parse import parse_qs, urlparse
+from utils.message_singleton import MessageSingleton
 
 # ARP spoofing functions from Justin Sietz https://nostarch.com/blackhatpython
 import os
@@ -89,6 +90,8 @@ def subnet_from_ifaddr(ifaddr):
 
 def get_arp_table(ifaddr):
     subnet = subnet_from_ifaddr(validate_ifaddr(ifaddr))
+    # sending message to GUI
+    msg = MessageSingleton('ARP table requested')
     # http://redimp.de/posts/scapy-without-entering-promiscuous-mode/
     answered, unanswered = arping(subnet)
     hostsArray = []
